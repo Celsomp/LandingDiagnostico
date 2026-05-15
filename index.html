@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Diagnóstico gratuito do teu funil de leads. 9 perguntas. 90 segundos. Relatório personalizado.">
+  <title>Diagnóstico de Leads — Celso Pereira</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:ital@0;1&family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ============================================================
+       1. HERO
+  ============================================================ -->
+  <section id="hero" class="hero">
+    <div class="hero__inner">
+      <p class="eyebrow">Diagnóstico Gratuito · 90 Segundos</p>
+      <div class="hero__divider"></div>
+      <h1 class="hero__h1">
+        O teu próximo cliente já entrou<br>em contacto contigo.<br>Só não sabes quem foi.
+      </h1>
+      <p class="hero__sub">
+        A maior parte dos leads não diz adeus. Simplesmente deixa de responder.
+        Este diagnóstico identifica onde o teu funil tem fugas — e quanto te estão
+        a custar por mês.
+      </p>
+      <a href="#quiz" class="btn btn--primary btn--hero" data-track="hero_cta_click">
+        Descobre os teus 3 gaps →
+      </a>
+    </div>
+  </section>
+
+  <!-- ============================================================
+       2. AUTHORITY STRIP
+  ============================================================ -->
+  <section id="authority" class="authority">
+    <div class="authority__inner">
+
+      <p class="eyebrow authority__eyebrow">Quem faz este diagnóstico</p>
+
+      <div class="authority__body">
+        <!-- Substituir por <img src="celso.jpg" alt="Celso Pereira" class="authority__photo"> quando a foto estiver disponível -->
+        <div class="authority__photo authority__photo--placeholder" role="img" aria-label="Celso Pereira">
+          <span>CP</span>
+        </div>
+        <div class="authority__text">
+          <p>Sou o Celso Pereira. Nos últimos 7 anos construí sistemas de captação
+          e follow-up para empreendedores em terapias, coaching, finanças, línguas
+          e alimentação saudável.</p>
+          <p>O padrão que vi repetir-se em quase todos os casos: a oferta era boa.
+          O problema estava no que acontecia depois do primeiro contacto.</p>
+
+          <ul class="authority__tags" aria-label="Áreas de trabalho">
+            <li>Terapias</li>
+            <li>Coaching</li>
+            <li>Finanças</li>
+            <li>Línguas</li>
+            <li>Alimentação</li>
+          </ul>
+        </div>
+      </div>
+
+      <blockquote class="authority__quote">
+        "Não vendo ferramentas. Construo o sistema à volta de como já trabalhas."
+      </blockquote>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       3. GAPS PREVIEW
+  ============================================================ -->
+  <section id="gaps" class="gaps">
+    <div class="gaps__inner">
+
+      <p class="eyebrow gaps__eyebrow">O que vais descobrir</p>
+      <h2 class="gaps__title">Três gaps que a maioria das coaches não sabe que tem</h2>
+      <p class="gaps__sub">
+        Não são problemas de conteúdo nem de oferta. São falhas no que acontece
+        entre o primeiro contacto e a decisão de compra.
+      </p>
+
+      <div class="gaps__grid">
+
+        <article class="gap-card">
+          <div class="gap-card__label">
+            <i data-lucide="clock" class="gap-card__icon"></i>
+            <span class="eyebrow">Tempo de resposta</span>
+          </div>
+          <div class="gap-card__stat">
+            <span class="gap-card__stat-num">10×</span>
+            <span class="gap-card__stat-desc">queda na qualificação após a primeira hora sem resposta</span>
+          </div>
+          <h3 class="gap-card__title">O momento certo dura menos do que pensas</h3>
+          <p class="gap-card__body">
+            Um lead que envia uma DM está, naquele momento, com atenção disponível.
+            Segundo investigação em vendas B2C, após a primeira hora sem resposta
+            a probabilidade de qualificação cai mais de 10×. Não por impaciência
+            — por distracção.
+          </p>
+        </article>
+
+        <article class="gap-card">
+          <div class="gap-card__label">
+            <i data-lucide="mail" class="gap-card__icon"></i>
+            <span class="eyebrow">Nutrição automática</span>
+          </div>
+          <h3 class="gap-card__title">O lead entrou. E depois?</h3>
+          <p class="gap-card__body">
+            Sem sequência automática, o acompanhamento compete com a tua agenda
+            — e perde sempre nas semanas mais cheias. Que são exactamente as
+            semanas em que tens mais leads quentes.
+          </p>
+        </article>
+
+        <article class="gap-card">
+          <div class="gap-card__label">
+            <i data-lucide="layout-list" class="gap-card__icon"></i>
+            <span class="eyebrow">Tracking de leads</span>
+          </div>
+          <h3 class="gap-card__title">O que não está registado não existe</h3>
+          <p class="gap-card__body">
+            Um pipeline invisível é um pipeline que não funciona. Sem saber onde
+            está cada lead, as decisões de follow-up ficam sempre atrasadas
+            — ou simplesmente não acontecem.
+          </p>
+        </article>
+
+      </div>
+
+      <div class="gaps__cta">
+        <p class="gaps__cta-text">Quanto te estão a custar estes três gaps este mês?</p>
+        <a href="#quiz" class="btn btn--primary" data-track="gaps_preview_cta_click">
+          Faz o diagnóstico — 90 segundos →
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       4. QUIZ
+  ============================================================ -->
+  <section id="quiz" class="quiz">
+    <div class="quiz__card">
+
+      <div class="quiz__header">
+        <p class="eyebrow quiz__eyebrow">Diagnóstico do teu funil</p>
+        <p class="quiz__subtitle">9 perguntas · 90 segundos · Relatório personalizado no final</p>
+        <div class="quiz__progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+          <div class="quiz__progress-bar" id="quizProgress"></div>
+        </div>
+        <p class="quiz__progress-label" id="quizProgressLabel" aria-live="polite">Pergunta 1 de 9</p>
+      </div>
+
+      <!-- steps gerados por quiz.js -->
+      <div class="quiz__steps" id="quizSteps"></div>
+
+      <!-- gate de email (após P9) -->
+      <div class="quiz__gate" id="quizGate" hidden>
+        <p class="quiz__gate-title">O teu relatório está pronto.</p>
+        <p class="quiz__gate-sub">Onde o enviamos?</p>
+        <form id="gateForm" class="gate__form" novalidate>
+          <input type="text"  id="gateName"  name="name"  placeholder="Primeiro nome"
+                 autocomplete="given-name" required class="gate__input">
+          <input type="email" id="gateEmail" name="email" placeholder="O teu email"
+                 autocomplete="email"       required class="gate__input">
+          <p class="gate__rgpd">
+            Não partilho os teus dados. Não envio spam. Podes cancelar quando quiseres.
+          </p>
+          <button type="submit" class="btn btn--primary gate__submit">
+            Ver o meu relatório →
+          </button>
+        </form>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       5. RELATÓRIO
+  ============================================================ -->
+  <section id="report" class="report" hidden>
+    <!-- fase 5 — gerado por quiz.js -->
+  </section>
+
+  <!-- ============================================================
+       6. CALENDLY
+  ============================================================ -->
+  <section id="calendly" class="calendly-section" hidden>
+    <div class="calendly-section__inner">
+
+      <p class="eyebrow calendly-section__eyebrow">A Chamada</p>
+      <h2 class="calendly-section__title">30 minutos. Sem compromisso. Sem pitch.</h2>
+      <p class="calendly-section__body">
+        Analiso o teu funil actual
+        <span aria-hidden="true"> · </span>
+        Identifico a primeira alavanca a corrigir
+        <span aria-hidden="true"> · </span>
+        Digo-te se faz sentido trabalharmos juntos — e se não fizer, digo-te também.
+      </p>
+      <p class="calendly-section__anti-pressure">
+        Não há vagas artificiais. Não há urgência fabricada.
+        Se o momento não for o certo para ti, a chamada ainda assim vale o tempo.
+      </p>
+
+      <!-- Substituir YOUR_LINK pelo slug do Calendly -->
+      <div
+        class="calendly-inline-widget calendly-section__widget"
+        data-url="https://calendly.com/d/cx4s-n6g-k8w?background_color=2c3e2d&text_color=f5f0e8&primary_color=8b6f47"
+        data-resize="true">
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       7. FAQ
+  ============================================================ -->
+  <section id="faq" class="faq">
+    <div class="faq__inner">
+
+      <p class="eyebrow faq__eyebrow">Perguntas Frequentes</p>
+
+      <dl class="faq__list">
+
+        <details class="faq__item" open data-faq-slug="gratuito">
+          <summary class="faq__question">
+            <span>Isto é gratuito? Qual é o catch?</span>
+            <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
+          </summary>
+          <dd class="faq__answer">
+            <p>O diagnóstico é gratuito e a chamada também. O catch honesto: se o sistema fizer sentido para o teu negócio, vou propor trabalharmos juntos. Se não fizer sentido, não proponho. Não há lista de espera artificial nem pressão de tempo.</p>
+          </dd>
+        </details>
+
+        <details class="faq__item" data-faq-slug="spam">
+          <summary class="faq__question">
+            <span>Vou receber spam depois?</span>
+            <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
+          </summary>
+          <dd class="faq__answer">
+            <p>Não. Vais receber o relatório por email e, se agendares chamada, um lembrete. Se não quiseres mais nada depois disso, basta dizer — ou cancelar directamente na lista. Sem drama.</p>
+          </dd>
+        </details>
+
+        <details class="faq__item" data-faq-slug="duracao-chamada">
+          <summary class="faq__question">
+            <span>Quanto tempo dura a chamada?</span>
+            <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
+          </summary>
+          <dd class="faq__answer">
+            <p>30 minutos. Começo pela análise do teu caso específico — não por uma apresentação da minha oferta. Se houver fit, falo no final. Se não houver, também digo.</p>
+          </dd>
+        </details>
+
+        <details class="faq__item" data-faq-slug="automacao">
+          <summary class="faq__question">
+            <span>Já tentei automação antes e não funcionou. Em que é diferente?</span>
+            <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
+          </summary>
+          <dd class="faq__answer">
+            <p>Na maioria dos casos que vi, a automação falhou porque foi instalada sem perceber o processo da pessoa. Começou pelas ferramentas, não pelo negócio. O que faço é o inverso: começo pela auditoria do teu processo actual e só depois construo o sistema à volta disso. As ferramentas são as últimas a entrar.</p>
+          </dd>
+        </details>
+
+        <details class="faq__item" data-faq-slug="tech">
+          <summary class="faq__question">
+            <span>Não sou muito tech. É demasiado complicado para mim?</span>
+            <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
+          </summary>
+          <dd class="faq__answer">
+            <p>Não é para ti que é complicado — é para mim. O teu papel depois da instalação é ler o CRM e fazer as chamadas. O sistema trabalha sem precisares de perceber como funciona por dentro. Se precisares de ajustar alguma coisa, estou cá.</p>
+          </dd>
+        </details>
+
+      </dl>
+
+    </div>
+  </section>
+
+  <!-- ============================================================
+       8. FOOTER
+  ============================================================ -->
+  <footer id="footer" class="footer">
+    <div class="footer__inner">
+
+      <div class="footer__brand">
+        <span class="footer__logo" aria-label="Celso Pereira">CP</span>
+        <div class="footer__brand-text">
+          <p class="footer__name">Celso Pereira</p>
+          <p class="footer__tagline">Automação para Coaches · Portugal · 2026</p>
+        </div>
+      </div>
+
+      <div class="footer__right">
+        <p class="footer__handle">@celsopereira.ia</p>
+        <nav class="footer__legal" aria-label="Legal">
+          <a href="/privacidade" class="footer__legal-link">Política de Privacidade</a>
+          <span aria-hidden="true">·</span>
+          <a href="/privacidade#rgpd" class="footer__legal-link">RGPD</a>
+        </nav>
+      </div>
+
+    </div>
+  </footer>
+
+  <script src="https://assets.calendly.com/assets/external/widget.js" async></script>
+  <script src="config.js"></script>
+  <script src="quiz.js" defer></script>
+  <script src="tracking.js" defer></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (window.lucide) lucide.createIcons();
+    });
+  </script>
+</body>
+</html>
