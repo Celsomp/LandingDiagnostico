@@ -1,5 +1,8 @@
 {
   "buildCommand": "node build.js",
   "outputDirectory": ".",
-  "framework": null
+  "framework": null,
+  "rewrites": [
+    { "source": "/privacidade", "destination": "/privacidade.html" }
+  ]
 }
