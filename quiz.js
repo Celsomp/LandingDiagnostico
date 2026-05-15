@@ -639,7 +639,6 @@ async function saveLeadToSupabase(result, nome, email) {
       const data = await res.json();
       if (data && data[0] && data[0].id) {
         insertedLeadId = data[0].id;
-        console.log('[supabase] lead criada:', insertedLeadId);
       }
     }
   } catch (err) {
@@ -690,7 +689,6 @@ function initReportAnimations(score, vendasPerdidasMes, email) {
           },
           body: JSON.stringify({ whatsapp: wa })
         });
-        console.log('[wa] status:', res.status);
       } catch (err) {
         console.error('[supabase] erro ao guardar whatsapp:', err);
       }
