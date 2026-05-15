@@ -657,12 +657,9 @@ async function saveLeadToSystemeio(result, nome, email) {
       .map(g => g.id)
       .join(', ');
 
-    const res = await fetch('https://api.systeme.io/api/contacts', {
+    const res = await fetch('/api/systemeio', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-API-Key': CONFIG.systemeio.key
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         email: email,
         firstName: nome,
