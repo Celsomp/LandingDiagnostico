@@ -242,6 +242,21 @@ async function handleGateSubmit(e) {
   const quizSection = document.getElementById('quiz');
   if (quizSection) quizSection.hidden = true;
 
+  // Esconder secções superiores com fade
+  const sectionsToHide = ['hero', 'authority', 'gaps'];
+  sectionsToHide.forEach((id, index) => {
+    const el = document.getElementById(id);
+    if (el) {
+      setTimeout(() => {
+        el.classList.add('section-fade-out');
+        setTimeout(() => {
+          el.hidden = true;
+          el.classList.remove('section-fade-out');
+        }, 600);
+      }, index * 100);
+    }
+  });
+
   if (typeof track === 'function') track('quiz_email_submitted');
 
   const result = calculateResult();
