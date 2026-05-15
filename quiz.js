@@ -717,7 +717,7 @@ function initReportAnimations(score, vendasPerdidasMes, email) {
       if (typeof track === 'function') track('calendly_cta_click');
 
       Calendly.initPopupWidget({
-        url: 'https://calendly.com/celsopereira79/auditoria-sistema-de-leads?background_color=2c3e2d&text_color=f5f0e8&primary_color=8b6f47'
+        url: 'https://calendly.com/d/cvwm-txr-qnh?background_color=2c3e2d&text_color=f5f0e8&primary_color=8b6f47'
       });
     });
   }
