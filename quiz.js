@@ -750,9 +750,15 @@ function initReportAnimations(score, vendasPerdidasMes, email) {
       if (ctaBtn.disabled) return;
       if (typeof track === 'function') track('calendly_cta_click');
 
-      Calendly.initPopupWidget({
-        url: 'https://calendly.com/d/cvwm-txr-qnh?background_color=2c3e2d&text_color=f5f0e8&primary_color=8b6f47'
+      const nome = document.getElementById('gateName').value.trim();
+      const email = submittedEmail;
+      const baseUrl = 'https://calendly.com/celsopereira79/auditoria-sistema-de-leads';
+      const params = new URLSearchParams({
+        name: nome,
+        email: email
       });
+
+      window.open(baseUrl + '?' + params.toString(), '_blank');
     });
   }
 }
