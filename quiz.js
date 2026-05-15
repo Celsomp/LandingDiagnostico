@@ -272,6 +272,8 @@ async function handleGateSubmit(e) {
     console.error('[supabase] erro ao guardar lead:', err);
   }
 
+  saveLeadToSystemeio(result, name, email);
+
   const reportSection = document.getElementById('report');
   if (!reportSection) return;
 
@@ -643,6 +645,43 @@ async function saveLeadToSupabase(result, nome, email) {
     }
   } catch (err) {
     console.error('[supabase] erro ao guardar lead:', err);
+  }
+}
+
+// ============================================================
+// SYSTEME.IO
+// ============================================================
+async function saveLeadToSystemeio(result, nome, email) {
+  try {
+    const gapsTexto = result.gapsMostrar
+      .map(g => g.id)
+      .join(', ');
+
+    const res = await fetch('https://api.systeme.io/api/contacts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-API-Key': CONFIG.systemeio.key
+      },
+      body: JSON.stringify({
+        email: email,
+        firstName: nome,
+        fields: [
+          { slug: 'quiz_score',     value: String(result.score) },
+          { slug: 'quiz_categoria', value: result.categoria },
+          { slug: 'quiz_custo',     value: String(result.vendasPerdidasMes) },
+          { slug: 'quiz_gaps',      value: gapsTexto }
+        ],
+        tags: ['Lista_Celso']
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.text();
+      console.error('[systemeio] erro:', err);
+    }
+  } catch (err) {
+    console.error('[systemeio] erro ao criar contacto:', err);
   }
 }
 

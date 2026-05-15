@@ -372,8 +372,8 @@ a {
    4. QUIZ
 ============================================================ */
 .quiz {
-  background: var(--cream);
-  padding: 72px 24px;
+  background: var(--beige);
+  padding: 56px 24px;
 }
 
 .quiz__card {
@@ -886,7 +886,8 @@ a {
    7. FAQ
 ============================================================ */
 .faq {
-  background: var(--cream);
+  background-color: var(--forest);
+  background-image: var(--diagonal-pattern);
   padding: 72px 24px;
 }
 
@@ -896,16 +897,16 @@ a {
 }
 
 .faq__eyebrow {
-  color: var(--fg-muted);
+  color: var(--sand);
   margin-bottom: 32px;
 }
 
 .faq__list {
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(245,240,232,0.15);
 }
 
 .faq__item {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(245,240,232,0.15);
 }
 
 /* remove o marcador nativo do <details> */
@@ -925,7 +926,7 @@ a {
   font-family: var(--font-sans);
   font-weight: 700;
   font-size: 15px;
-  color: var(--ink);
+  color: var(--cream);
   cursor: pointer;
   user-select: none;
   /* área de toque em toda a linha */
@@ -933,14 +934,14 @@ a {
 }
 
 .faq__question:hover {
-  color: var(--forest);
+  color: var(--sand);
 }
 
 .faq__chevron {
   flex-shrink: 0;
   width: 18px;
   height: 18px;
-  color: var(--fg-muted);
+  color: var(--sand);
   transition: transform 0.2s ease;
 }
 
@@ -957,7 +958,7 @@ a {
   font-family: var(--font-sans);
   font-weight: 400;
   font-size: 14px;
-  color: var(--fg-muted);
+  color: rgba(245,240,232,0.75);
   line-height: 1.6;
 }
 
