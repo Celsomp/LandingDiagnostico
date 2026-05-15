@@ -11,26 +11,36 @@ export default async function handler(req, res) {
   };
 
   try {
-    // 1. Criar/actualizar contacto (sem tags — a API espera IDs numéricos)
+    // 1. Criar contacto
     const contactRes = await fetch('https://api.systeme.io/api/contacts', {
       method: 'POST',
       headers: baseHeaders,
       body: JSON.stringify({ email, firstName, fields })
     });
 
-    const contactText = await contactRes.text();
+    let contactId;
 
-    if (!contactRes.ok) {
-      console.error('[systemeio] erro ao criar contacto:', contactRes.status, contactText);
-      return res.status(contactRes.status).json({ error: contactText });
+    if (contactRes.ok) {
+      const contact = await contactRes.json();
+      contactId = contact.id;
+    } else if (contactRes.status === 422) {
+      // Contacto já existe — buscar pelo email
+      const searchRes = await fetch(
+        `https://api.systeme.io/api/contacts?email=${encodeURIComponent(email)}`,
+        { headers: { 'X-API-Key': apiKey } }
+      );
+      if (searchRes.ok) {
+        const searchData = await searchRes.json();
+        contactId = searchData.items?.[0]?.id;
+      }
+    } else {
+      const text = await contactRes.text();
+      console.error('[systemeio] erro ao criar contacto:', contactRes.status, text);
+      return res.status(contactRes.status).json({ error: text });
     }
 
-    const contact = JSON.parse(contactText);
-    const contactId = contact.id;
-
-    // 2. Adicionar tags por nome → ID
+    // 2. Adicionar tags por nome → ID numérico
     if (tags && tags.length > 0 && contactId) {
-      // Obter lista de tags existentes
       const tagsRes = await fetch('https://api.systeme.io/api/tags?limit=100', {
         headers: { 'X-API-Key': apiKey }
       });
@@ -41,7 +51,6 @@ export default async function handler(req, res) {
       for (const tagName of tags) {
         let tagId = tagMap[tagName];
 
-        // Criar tag se não existir
         if (!tagId) {
           const createRes = await fetch('https://api.systeme.io/api/tags', {
             method: 'POST',
@@ -54,7 +63,6 @@ export default async function handler(req, res) {
           }
         }
 
-        // Associar tag ao contacto
         if (tagId) {
           await fetch(`https://api.systeme.io/api/contacts/${contactId}/tags`, {
             method: 'POST',
