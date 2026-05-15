@@ -713,17 +713,30 @@ function initReportAnimations(score, vendasPerdidasMes, email) {
     });
 
     ctaBtn.addEventListener('click', () => {
-      if (waFieldBtn.value.trim().length < 9) return;
+      if (ctaBtn.disabled) return;
       if (typeof track === 'function') track('calendly_cta_click');
+
       const calendlySection = document.getElementById('calendly');
       if (calendlySection) {
         calendlySection.hidden = false;
+
+        // Inicializar widget Calendly se necessário
         if (window.Calendly) {
           window.Calendly.initInlineWidgets();
         }
+
+        // Aguardar renderização antes de fazer scroll
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setTimeout(() => {
+              calendlySection.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+              });
+            }, 300);
+          });
+        });
       }
-      document.getElementById('calendly')
-        .scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
 }
