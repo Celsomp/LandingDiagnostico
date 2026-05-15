@@ -752,7 +752,7 @@ function initReportAnimations(score, vendasPerdidasMes, email) {
 
       const nome = document.getElementById('gateName').value.trim();
       const email = submittedEmail;
-      const baseUrl = 'https://calendly.com/celsopereira79/auditoria-sistema-de-leads';
+      const baseUrl = 'https://calendly.com/celsop/teste';
       const params = new URLSearchParams({
         name: nome,
         email: email
