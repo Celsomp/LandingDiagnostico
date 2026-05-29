@@ -3,6 +3,9 @@
   "outputDirectory": ".",
   "framework": null,
   "rewrites": [
-    { "source": "/privacidade", "destination": "/privacidade.html" }
+    { "source": "/privacidade", "destination": "/privacidade.html" },
+    { "source": "/playbook",        "destination": "https://backoffice-auditoria.vercel.app/playbook" },
+    { "source": "/playbook/:path*", "destination": "https://backoffice-auditoria.vercel.app/playbook/:path*" },
+    { "source": "/auditoria/:path*","destination": "https://backoffice-auditoria.vercel.app/playbook/auditoria/:path*" }
   ]
 }
