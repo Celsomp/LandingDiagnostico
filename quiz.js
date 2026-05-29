@@ -49,7 +49,7 @@ const QUESTIONS = [
     id: 'P5', num: '05',
     text: 'Como acompanhas os potenciais clientes que já mostraram interesse mas ainda não compraram?',
     options: [
-      { label: 'Tenho um CRM ou sistema próprio — sei exactamente em que fase está cada lead', value: 'crm_proprio'   },
+      { label: 'Tenho um CRM ou sistema próprio — sei exactamente onde está cada contacto', value: 'crm_proprio'   },
       { label: 'Uso Notion ou Excel, mas não é consistente',                                   value: 'notion_excel'  },
       { label: 'Guardo mentalmente ou nas notas do telemóvel',                                 value: 'mental'        },
       { label: 'Não acompanho — se voltarem, bem; se não voltarem, perco-os',                 value: 'nao_acompanha' },
@@ -80,7 +80,7 @@ const QUESTIONS = [
     text: 'O que te trava mais, neste momento, em fechar mais clientes?',
     options: [
       { label: 'Não tenho tempo para responder a todas as mensagens',        value: 'tempo'            },
-      { label: 'Os leads entram mas perco-os pelo caminho — não sei porquê', value: 'perda_silenciosa' },
+      { label: 'As pessoas entram mas perco-as pelo caminho — não sei porquê', value: 'perda_silenciosa' },
       { label: 'Não tenho processo — cada venda é diferente',               value: 'sem_processo'     },
       { label: 'Tenho processo mas é tudo manual — é cansativo',            value: 'manual_cansativo' },
     ],
@@ -406,16 +406,16 @@ function renderReport({ score, categoria, vendasPerdidasMes, gapsMostrar, tag })
   const gapCount = gapsMostrar.length;
 
   const costBlock = vendasPerdidasMes < 200
-    ? `<p class="report__cost-edge">O teu volume actual de leads é baixo — o custo visível ainda não é alto, mas o padrão que está a instalar-se é o que impede o crescimento.</p>`
+    ? `<p class="report__cost-edge">O teu volume actual de contactos é baixo — o custo visível ainda não é alto, mas o padrão que está a instalar-se é o que impede o crescimento.</p>`
     : `<span class="report__cost-value"></span>
-       <p class="report__cost-note">Calculado com base na tua faturação actual, no volume de leads que indicaste e numa taxa de perda de 30% por falta de follow-up estruturado. É uma estimativa conservadora.</p>`;
+       <p class="report__cost-note">Calculado com base na tua faturação actual, no volume de contactos que indicaste e numa taxa de perda de 30% por falta de follow-up estruturado. É uma estimativa conservadora.</p>`;
 
   const gapsBlock = gapCount > 0
     ? gapsMostrar.map(renderGapCard).join('')
     : '';
 
   const edgeNote = gapCount < 3
-    ? `<p class="report__gaps-edge">Com um score de ${score}, os teus gaps são pontuais. Mesmo assim, cada um tem custo — e são corrigíveis rapidamente.</p>`
+    ? `<p class="report__gaps-edge">Com um score de ${score}, as tuas fugas são pontuais. Mesmo assim, cada uma tem custo — e são corrigíveis rapidamente.</p>`
     : '';
 
   return `
@@ -439,12 +439,12 @@ function renderReport({ score, categoria, vendasPerdidasMes, gapsMostrar, tag })
       </div>
 
       <div class="report__cost">
-        <p class="eyebrow report__cost-eyebrow">Custo estimado em leads perdidos este mês</p>
+        <p class="eyebrow report__cost-eyebrow">Custo estimado em contactos perdidos este mês</p>
         ${costBlock}
       </div>
 
       <div class="report__gaps">
-        <p class="eyebrow report__gaps-eyebrow">Os teus ${gapCount || 'principais'} gaps ${gapCount === 1 ? 'principal' : 'principais'}</p>
+        <p class="eyebrow report__gaps-eyebrow">As tuas ${gapCount || 'principais'} fugas ${gapCount === 1 ? 'principal' : 'principais'}</p>
         <div class="report__gaps-list">
           ${gapsBlock}
           ${edgeNote}
@@ -452,7 +452,7 @@ function renderReport({ score, categoria, vendasPerdidasMes, gapsMostrar, tag })
       </div>
 
       <div class="report__cta">
-        <h3 class="report__cta-title">Identificaste os gaps. O próximo passo é fechá-los.</h3>
+        <h3 class="report__cta-title">Identificaste as fugas. O próximo passo é fechá-las.</h3>
         <p class="report__cta-body">Numa chamada de 30 minutos, analiso o teu caso específico e digo-te exactamente o que construir primeiro. Sem pitch agressivo. Se não fizer sentido para o teu momento, digo-te eu.</p>
         <label class="report__wa-label" for="waField">WhatsApp (opcional — para te contactar directamente se preferires)</label>
         <input type="tel" id="waField" class="report__wa-input" placeholder="O teu número de WhatsApp">
@@ -479,7 +479,7 @@ function renderAntiFit() {
         <h2 class="report__antifit-title">Este sistema não é para ti — ainda.</h2>
         <div class="report__antifit-body">
           <p>O que construo precisa de dois ingredientes que ainda estás a cultivar: uma audiência minimamente activa no Instagram e faturação que mostre que já tens clientes a pagar pelo teu trabalho.</p>
-          <p>Sem esses dois elementos, o sistema fica vazio — não há leads para qualificar, e isso não seria justo para ti nem para mim.</p>
+          <p>Sem esses dois elementos, o sistema fica vazio — não há contactos para trabalhar, e isso não seria justo para ti nem para mim.</p>
           <p>Quando estiveres a faturar 2.000€/mês com regularidade e tiveres 500+ seguidores activos, volta cá. Vou estar à espera — e o diagnóstico vai fazer muito mais sentido nessa altura.</p>
           <p>Até lá, o melhor investimento é na audiência e na oferta. Não no sistema.</p>
         </div>
@@ -494,9 +494,9 @@ function renderAntiFit() {
 function getOpeningText(tag) {
   const texts = {
     tempo:
-      'O teu problema não é falta de vontade. É falta de sistema. Quando tudo passa por ti, o tempo é o primeiro recurso a esgotar-se — e os leads são os primeiros a perder-se.',
+      'O teu problema não é falta de vontade. É falta de sistema. Quando tudo passa por ti, o tempo é o primeiro recurso a esgotar-se — e os contactos são os primeiros a perder-se.',
     perda_silenciosa:
-      'Os leads que perdes não te avisam que vão embora. Simplesmente deixam de responder. O problema raramente é o preço ou a oferta — é o silêncio que acontece entre o primeiro contacto e a decisão.',
+      'As pessoas que perdes não te avisam que vão embora. Simplesmente deixam de responder. O problema raramente é o preço ou a oferta — é o silêncio que acontece entre o primeiro contacto e a decisão.',
     sem_processo:
       'Quando cada venda é diferente, é impossível saber o que está a funcionar. O que parece flexibilidade é, na prática, energia desperdiçada a reinventar o mesmo caminho.',
     manual_cansativo:
@@ -508,11 +508,11 @@ function getOpeningText(tag) {
 function getCategoryText(categoria) {
   const texts = {
     critico:
-      '<strong>O teu funil tem fugas em múltiplos pontos.</strong> Não é um problema — é um ponto de partida. Os sistemas com mais para corrigir são os que têm mais para ganhar. O que vês abaixo são os 3 gaps com maior impacto imediato.',
+      '<strong>O teu funil tem fugas em múltiplos pontos.</strong> Não é um problema — é um ponto de partida. Os sistemas com mais para corrigir são os que têm mais para ganhar. O que vês abaixo são as 3 fugas com maior impacto imediato.',
     em_margem:
-      '<strong>Tens estrutura, mas estás a deixar leads pelo caminho.</strong> O problema não é o teu trabalho nem a tua oferta. É o que acontece entre o primeiro contacto e a chamada. Os gaps abaixo são corrigíveis — e o impacto é imediato quando o são.',
+      '<strong>Tens estrutura, mas estás a deixar contactos pelo caminho.</strong> O problema não é o teu trabalho nem a tua oferta. É o que acontece entre o primeiro contacto e a chamada. As fugas abaixo são corrigíveis — e o impacto é imediato quando o são.',
     solido:
-      '<strong>Estás acima da média — e isso torna os gaps mais caros.</strong> Quando o resto do sistema funciona bem, uma fuga num ponto específico custa proporcionalmente mais. Os gaps abaixo são pequenos em esforço de correcção, grandes em impacto.',
+      '<strong>Estás acima da média — e isso torna as fugas mais caras.</strong> Quando o resto do sistema funciona bem, uma fuga num ponto específico custa proporcionalmente mais. As fugas abaixo são pequenas em esforço de correcção, grandes em impacto.',
   };
   return texts[categoria] || texts.em_margem;
 }
@@ -521,37 +521,37 @@ function getGapContent({ id, versao }) {
   const GAPS = {
     A: {
       label: 'TEMPO DE RESPOSTA',
-      title: 'Tempo de resposta — o gap invisível',
+      title: 'Tempo de resposta — a fuga invisível',
       body: {
         moderate: ['5min_1h', '1h_4h'],
         moderateText:
-          'Respondes entre 5 minutos e 4 horas. Parece razoável — mas um lead que envia uma DM está, nesse momento, com atenção disponível. Passada a primeira hora, essa atenção foi para outro sítio. Não é sobre urgência — é sobre timing.',
+          'Respondes entre 5 minutos e 4 horas. Parece razoável — mas quem envia uma DM está, nesse momento, com atenção disponível. Passados os primeiros 5 minutos, essa atenção começa a ir para outro sítio. Não é sobre urgência — é sobre timing.',
         severeText:
-          'Respondes passadas 4 horas ou mais. Nesse intervalo, o lead arrefece, distrai-se, ou simplesmente avança para outra opção. Não porque a tua oferta seja pior — porque foste a segunda a responder. O primeiro contacto é o momento de maior intenção de compra.',
+          'Respondes passadas 4 horas ou mais. Nesse intervalo, a pessoa arrefece, distrai-se, ou simplesmente avança para outra opção. Não porque a tua oferta seja pior — porque foste a segunda a responder. O primeiro contacto é o momento de maior intenção de compra.',
       },
     },
     B: {
-      label: 'NUTRIÇÃO AUTOMÁTICA',
-      title: 'Nutrição ausente — leads que entram frios e saem sem decidir',
+      label: 'ACOMPANHAMENTO AUTOMÁTICO',
+      title: 'Acompanhamento ausente — contactos que entram e saem sem decidir',
       body: {
         manual:
-          'Tens lista mas o acompanhamento depende de ti. Isso significa que nos dias em que tens sessões, o follow-up não acontece. Um lead que não recebe nada nos primeiros 3 dias depois do primeiro contacto tem menos de metade das hipóteses de converter.',
+          'Tens lista mas o acompanhamento depende de ti. Isso significa que nos dias em que tens sessões, o follow-up não acontece. Quem não recebe nada nos primeiros 3 dias depois do primeiro contacto tem menos de metade das hipóteses de converter.',
         lista_fria:
-          'Tens lista mas ela não trabalha. Uma lista que não recebe sequência automática é um activo parado. Cada lead que entrou e não recebeu acompanhamento imediato perdeu momentum.',
+          'Tens lista mas ela não trabalha. Uma lista que não recebe sequência automática é um activo parado. Cada contacto que entrou e não recebeu acompanhamento imediato perdeu momentum.',
         sem_lista:
-          'Não tens lista activa. Isso significa que cada lead que entra depende exclusivamente do teu timing para converter. A lista de emails é o único activo de captação que não depende do algoritmo do Instagram para existir amanhã.',
+          'Não tens lista activa. Isso significa que cada contacto que entra depende exclusivamente do teu timing para converter. A lista de emails é o único activo de captação que não depende do algoritmo do Instagram para existir amanhã.',
       },
     },
     C: {
-      label: 'TRACKING DE LEADS',
-      title: 'Leads sem mapa — o que não está registado não existe',
+      label: 'REGISTO DE CONTACTOS',
+      title: 'Contactos sem mapa — o que não está registado não existe',
       body: {
         notion_excel:
-          'Tens sistema mas não é consistente. O problema com tracking inconsistente é que cria uma falsa sensação de controlo. Um lead que ficou "para contactar depois" e não tem data de follow-up registada é, na prática, um lead perdido com adiamento.',
+          'Tens sistema mas não é consistente. O problema com registo inconsistente é que cria uma falsa sensação de controlo. Uma pessoa que ficou "para contactar depois" e não tem data de follow-up registada é, na prática, um contacto perdido com adiamento.',
         mental:
-          'Acompanhas mentalmente. Isso funciona até 5 leads. Acima disso, começas a perder contexto — não sobre quem são, mas sobre onde estão no processo. O lead que "fica para a semana" sem estar registado em lado nenhum raramente volta a aparecer na tua agenda.',
+          'Acompanhas mentalmente. Isso funciona até 5 pessoas. Acima disso, começas a perder contexto — não sobre quem são, mas sobre onde estão no processo. A pessoa que "fica para a semana" sem estar registada em lado nenhum raramente volta a aparecer na tua agenda.',
         nao_acompanha:
-          'Não há tracking. Isso significa que o teu pipeline de vendas é invisível. Trabalhar sem CRM é como gerir um negócio sem saber o saldo bancário: as decisões ficam sempre atrasadas em relação à realidade.',
+          'Não há registo. Isso significa que os teus contactos são invisíveis para ti. Trabalhar sem CRM é como gerir um negócio sem saber o saldo bancário: as decisões ficam sempre atrasadas em relação à realidade.',
       },
     },
     D: {
@@ -564,10 +564,10 @@ function getGapContent({ id, versao }) {
     },
     E: {
       label: 'FOLLOW-UP AUSENTE',
-      title: 'Follow-up ausente — leads quentes a arrefecer sem razão',
+      title: 'Follow-up ausente — contactos quentes a arrefecer sem razão',
       body: {
         default:
-          'Quase não fazes follow-up. Não por falta de intenção — por falta de processo. Sem sistema, o follow-up compete com tudo o resto na tua agenda e perde sempre. Os leads que entram com intenção real de compra precisam de 2 a 5 pontos de contacto antes de decidirem.',
+          'Quase não fazes follow-up. Não por falta de intenção — por falta de processo. Sem sistema, o follow-up compete com tudo o resto na tua agenda e perde sempre. As pessoas que entram com intenção real de compra precisam de 2 a 5 pontos de contacto antes de decidirem.',
       },
     },
   };
