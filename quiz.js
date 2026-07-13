@@ -752,7 +752,7 @@ function initReportAnimations(score, vendasPerdidasMes, email) {
 
       const nome = document.getElementById('gateName').value.trim();
       const email = submittedEmail;
-      const baseUrl = 'https://calendly.com/celsop/teste';
+      const baseUrl = 'https://calendly.com/celsop/auditoria';
       const params = new URLSearchParams({
         name: nome,
         email: email
