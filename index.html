@@ -14,6 +14,24 @@
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
 
   <link rel="stylesheet" href="styles.css">
+
+  <!-- Meta Pixel Code -->
+  <script>
+  !function(f,b,e,v,n,t,s)
+  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+  n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];
+  s.parentNode.insertBefore(t,s)}(window, document,'script',
+  'https://connect.facebook.net/en_US/fbevents.js');
+  fbq('init', '1411141222388292');
+  fbq('track', 'PageView');
+  </script>
+  <noscript><img height="1" width="1" style="display:none"
+  src="https://www.facebook.com/tr?id=1411141222388292&ev=PageView&noscript=1"
+  /></noscript>
+  <!-- End Meta Pixel Code -->
 </head>
 <body>
 
@@ -184,6 +202,53 @@
   ============================================================ -->
   <section id="report" class="report" hidden>
     <!-- fase 5 — gerado por quiz.js -->
+  </section>
+
+  <!-- ============================================================
+       6. TESTEMUNHOS
+  ============================================================ -->
+  <section id="testemunhos" class="testimonials">
+    <div class="testimonials__inner">
+
+      <p class="eyebrow testimonials__eyebrow">Quem já trabalhou comigo</p>
+      <div class="testimonials__divider"></div>
+      <h2 class="testimonials__title">As coisas acontecem — e acontecem nos timings certos.</h2>
+      <p class="testimonials__sub">
+        Antes de construir sistemas para coaches, construí funis e sites para empreendedoras digitais.
+        O padrão repete-se: processos simples, entrega rápida, resultados.
+      </p>
+
+      <blockquote class="testimonials__anchor">
+        <p class="testimonials__anchor-quote">"Criámos um funil para a recolha de leads — o meu calcanhar de Aquiles. De Agosto para cá, mais de <span class="testimonials__anchor-num">100</span> leads, com investimento baixo."</p>
+        <footer class="testimonials__anchor-attr">— Cláudia · produtora de infoprodutos</footer>
+      </blockquote>
+
+      <div class="testimonials__grid">
+
+        <blockquote class="testimonials__card">
+          <p class="testimonials__card-quote">"Eu sei fazer funis. Mesmo assim pedi ajuda ao Celso — faz em dias o que eu levaria semanas. Foi a melhor decisão que podia ter tomado."</p>
+          <footer class="testimonials__card-attr">— Maria João · Pássaro de Seda</footer>
+        </blockquote>
+
+        <blockquote class="testimonials__card">
+          <p class="testimonials__card-quote">"Procurava alguém que simplificasse os processos. É exactamente isso que o Celso faz — um excelente trabalho nos funis e na captação de clientes."</p>
+          <footer class="testimonials__card-attr">— Hugo</footer>
+        </blockquote>
+
+        <blockquote class="testimonials__card">
+          <p class="testimonials__card-quote">"Não é 'adorei trabalhar com ele' — é 'adoro', porque continuo. Recomendo sem hesitar."</p>
+          <footer class="testimonials__card-attr">— Isabel Figueiredo</footer>
+        </blockquote>
+
+      </div>
+
+      <div class="testimonials__cta">
+        <a href="#quiz" class="btn btn--primary" data-track="testimonials_cta_click">
+          Faz o diagnóstico — 90 segundos →
+        </a>
+      </div>
+
+    </div>
   </section>
 
   <!-- ============================================================
