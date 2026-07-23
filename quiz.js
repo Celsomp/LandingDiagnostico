@@ -1,4 +1,4 @@
-/* quiz.js — lógica do quiz, score e relatório condicional */
+/* quiz.js — Diagnóstico de Lançamento · lógica, score e relatório condicional */
 
 // ============================================================
 // DADOS DAS PERGUNTAS
@@ -6,93 +6,92 @@
 const QUESTIONS = [
   {
     id: 'P1', num: '01',
-    text: 'Qual é a tua faturação mensal média com o teu negócio de coaching ou terapia?',
+    text: 'Qual é o tamanho da tua lista de email activa?',
     options: [
-      { label: 'Menos de 2.000€/mês',          value: 'menos_2k' },
-      { label: 'Entre 2.000€ e 5.000€/mês',    value: '2k_5k'   },
-      { label: 'Entre 5.000€ e 10.000€/mês',   value: '5k_10k'  },
-      { label: 'Mais de 10.000€/mês',           value: 'mais_10k'},
+      { label: 'Menos de 500',            value: 'menos_500' },
+      { label: 'Entre 500 e 1.000',       value: '500_1k'   },
+      { label: 'Entre 1.000 e 5.000',     value: '1k_5k'    },
+      { label: 'Mais de 5.000',           value: 'mais_5k'  },
     ],
   },
   {
     id: 'P2', num: '02',
-    text: 'Quantos seguidores activos tens no Instagram — pessoas que comentam, respondem às stories ou enviam DMs regularmente?',
+    text: 'Quantos seguidores activos tens no Instagram — pessoas que comentam, respondem às stories ou enviam DMs?',
     options: [
-      { label: 'Menos de 500',          value: 'menos_500' },
-      { label: 'Entre 500 e 2.000',     value: '500_2k'   },
-      { label: 'Entre 2.000 e 10.000',  value: '2k_10k'   },
-      { label: 'Mais de 10.000',        value: 'mais_10k' },
+      { label: 'Menos de 500',            value: 'menos_500' },
+      { label: 'Entre 500 e 2.000',       value: '500_2k'   },
+      { label: 'Entre 2.000 e 10.000',    value: '2k_10k'   },
+      { label: 'Mais de 10.000',          value: 'mais_10k' },
     ],
   },
   {
     id: 'P3', num: '03',
-    text: 'Quando alguém comenta um post teu ou envia uma DM com interesse, quanto tempo demoras normalmente a responder?',
+    text: 'O que vendes como oferta principal?',
     options: [
-      { label: 'Até 5 minutos — tenho notificações activas',           value: 'ate_5min' },
-      { label: 'Entre 5 minutos e 1 hora',                             value: '5min_1h'  },
-      { label: 'Entre 1 hora e 4 horas',                               value: '1h_4h'   },
-      { label: 'Entre 4 horas e 1 dia',                                value: '4h_1d'   },
-      { label: 'Mais de 1 dia — ou às vezes não chego a responder',    value: 'mais_1d' },
+      { label: 'Um curso ou programa online',              value: 'curso'     },
+      { label: 'Uma mentoria de grupo',                    value: 'grupo'     },
+      { label: 'Sessões ou serviço individual',            value: 'individual'},
+      { label: 'Ainda não vendo nada',                     value: 'nada'      },
     ],
   },
   {
     id: 'P4', num: '04',
-    text: 'Quando alguém entra na tua lista de emails ou deixa o contacto, o que acontece a seguir?',
+    text: 'A que preço vendes o teu produto ou programa principal?',
     options: [
-      { label: 'Recebe uma sequência automática de emails que já escrevi', value: 'sequencia'  },
-      { label: 'Recebo uma notificação e entro em contacto manualmente',   value: 'manual'     },
-      { label: 'Fica na lista mas não recebe nada de imediato',            value: 'lista_fria' },
-      { label: 'Não tenho lista de emails activa',                         value: 'sem_lista'  },
+      { label: 'Menos de 100€',           value: 'menos_100' },
+      { label: 'Entre 100€ e 300€',       value: '100_300'  },
+      { label: 'Entre 300€ e 1.000€',     value: '300_1k'   },
+      { label: 'Mais de 1.000€',          value: 'mais_1k'  },
     ],
   },
   {
     id: 'P5', num: '05',
-    text: 'Como acompanhas os potenciais clientes que já mostraram interesse mas ainda não compraram?',
+    text: 'Quantos lançamentos fazes por ano?',
     options: [
-      { label: 'Tenho um CRM ou sistema próprio — sei exactamente onde está cada contacto', value: 'crm_proprio'   },
-      { label: 'Uso Notion ou Excel, mas não é consistente',                                   value: 'notion_excel'  },
-      { label: 'Guardo mentalmente ou nas notas do telemóvel',                                 value: 'mental'        },
-      { label: 'Não acompanho — se voltarem, bem; se não voltarem, perco-os',                 value: 'nao_acompanha' },
+      { label: 'Nunca fiz um lançamento a sério', value: 'nenhum' },
+      { label: '1 por ano',                        value: 'um'     },
+      { label: '2 a 3 por ano',                    value: 'dois_tres'},
+      { label: '4 ou mais por ano',                value: 'quatro' },
     ],
   },
   {
     id: 'P6', num: '06',
-    text: 'Quanto tempo dedicas por semana a follow-up manual — DMs, respostas, mensagens de acompanhamento?',
+    text: 'Quanto faturou o teu último lançamento?',
     options: [
-      { label: 'Quase não faço follow-up — não tenho processo para isso', value: 'quase_nao' },
-      { label: 'Entre 1 e 3 horas — faço o essencial',                    value: '1_3h'      },
-      { label: 'Entre 3 e 7 horas — já pesa na agenda',                   value: '3_7h'      },
-      { label: 'Mais de 7 horas — ocupa demasiado tempo',                 value: 'mais_7h'   },
+      { label: 'Não sei / nunca medi',    value: 'nao_sei'  },
+      { label: 'Menos de 2.000€',         value: 'menos_2k' },
+      { label: 'Entre 2.000€ e 10.000€',  value: '2k_10k'   },
+      { label: 'Mais de 10.000€',         value: 'mais_10k' },
     ],
   },
   {
     id: 'P7', num: '07',
-    text: 'Quantos potenciais clientes te contactam por mês com intenção real de compra — DMs, respostas a stories, pedidos de informação?',
+    text: 'Antes de abrires o carrinho, aqueces a lista (conteúdo, aulas, emails de antecipação)?',
     options: [
-      { label: 'Menos de 5 por mês',    value: 'menos_5' },
-      { label: 'Entre 5 e 15 por mês',  value: '5_15'    },
-      { label: 'Entre 15 e 30 por mês', value: '15_30'   },
-      { label: 'Mais de 30 por mês',    value: 'mais_30' },
+      { label: 'Sim, com uma sequência estruturada',       value: 'estruturado' },
+      { label: 'Faço algo, mas informal',                  value: 'informal'    },
+      { label: 'Não — abro o carrinho directamente',       value: 'direto'      },
+      { label: 'Não tenho sequência de emails montada',    value: 'sem_seq'     },
     ],
   },
   {
     id: 'P8', num: '08',
-    text: 'O que te trava mais, neste momento, em fechar mais clientes?',
+    text: 'Como está montado o teu lançamento hoje?',
     options: [
-      { label: 'Não tenho tempo para responder a todas as mensagens',        value: 'tempo'            },
-      { label: 'As pessoas entram mas perco-as pelo caminho — não sei porquê', value: 'perda_silenciosa' },
-      { label: 'Não tenho processo — cada venda é diferente',               value: 'sem_processo'     },
-      { label: 'Tenho processo mas é tudo manual — é cansativo',            value: 'manual_cansativo' },
+      { label: 'Tenho um sistema/sequência montado que reutilizo', value: 'sistema'    },
+      { label: 'Monto tudo à mão, de cada vez',                    value: 'mao'        },
+      { label: 'Contrato uma agência ou lançador',                 value: 'agencia'    },
+      { label: 'Não tenho processo — cada lançamento é diferente', value: 'sem_proc'   },
     ],
   },
   {
     id: 'P9', num: '09',
-    text: 'O teu modelo de negócio principal é...',
+    text: 'O que mais te trava no próximo lançamento?',
     options: [
-      { label: 'Sessões individuais',                        value: 'individual' },
-      { label: 'Programa de grupo',                          value: 'grupo'      },
-      { label: 'Produto digital (curso, ebook, assinatura)', value: 'digital'    },
-      { label: 'Misto — várias fontes de receita',           value: 'misto'      },
+      { label: 'Falta de tempo para o montar',              value: 'tempo'     },
+      { label: 'Não sei porque rende menos do que devia',   value: 'porque'    },
+      { label: 'Faço tudo sozinho — depende todo de mim',   value: 'sozinho'   },
+      { label: 'Falta-me a parte técnica / de IA',          value: 'tecnica'   },
     ],
   },
 ];
@@ -288,87 +287,85 @@ async function handleGateSubmit(e) {
   setTimeout(() => {
     reportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     if (typeof lucide !== 'undefined') lucide.createIcons();
-    initReportAnimations(result.score, result.vendasPerdidasMes, email);
+    initReportAnimations(result.score, result.gapLancamento, email);
   }, 800);
 }
 
 // ============================================================
-// CÁLCULO DE SCORE
+// CÁLCULO DE SCORE E DA CONTA (gap por lançamento)
 // ============================================================
 function calculateResult() {
   const { P1, P2, P3, P4, P5, P6, P7, P8, P9 } = answers;
 
-  let score_base = 100;
-  let anti_fit   = false;
+  let anti_fit = false;
 
-  if (P1 === 'menos_2k')  { anti_fit = true; }
-  if (P1 === '2k_5k')     { score_base = 60; }
-  if (P1 === '5k_10k')    { score_base = 75; }
-  if (P1 === 'mais_10k')  { score_base = 85; }
+  // Anti-fit: sem produto para lançar, ou sem audiência nenhuma
+  if (P3 === 'nada') anti_fit = true;
+  if (P1 === 'menos_500' && P2 === 'menos_500') anti_fit = true;
 
-  let score = score_base;
+  // --- SCORE: prontidão do lançamento (0-100) ---
+  let score = 100;
 
-  if (P2 === 'menos_500') { anti_fit = true; }
-  if (P2 === '2k_10k')    { score += 5;  }
-  if (P2 === 'mais_10k')  { score += 10; }
+  // Aquecimento da lista (P7)
+  if (P7 === 'informal') score -= 8;
+  if (P7 === 'direto')   score -= 15;
+  if (P7 === 'sem_seq')  score -= 18;
 
-  if (P3 === '5min_1h')  { score -= 5;  }
-  if (P3 === '1h_4h')    { score -= 10; }
-  if (P3 === '4h_1d')    { score -= 15; }
-  if (P3 === 'mais_1d')  { score -= 20; }
+  // Montagem / dependência (P8)
+  if (P8 === 'mao')      score -= 15;
+  if (P8 === 'agencia')  score -= 5;
+  if (P8 === 'sem_proc') score -= 20;
 
-  if (P4 === 'manual')     { score -= 10; }
-  if (P4 === 'lista_fria') { score -= 15; }
-  if (P4 === 'sem_lista')  { score -= 20; }
+  // Trava principal (P9)
+  if (P9 === 'porque')   score -= 10;
+  if (P9 === 'sozinho')  score -= 8;
+  if (P9 === 'tecnica')  score -= 8;
+  if (P9 === 'tempo')    score -= 5;
 
-  if (P5 === 'notion_excel')  { score -= 8;  }
-  if (P5 === 'mental')        { score -= 12; }
-  if (P5 === 'nao_acompanha') { score -= 15; }
-
-  if (P6 === 'quase_nao') { score -= 10; }
-  if (P6 === '3_7h')      { score -= 8;  }
-  if (P6 === 'mais_7h')   { score -= 12; }
+  // Nunca mediu / nunca lançou
+  if (P6 === 'nao_sei')  score -= 10;
+  if (P5 === 'nenhum')   score -= 8;
 
   score = Math.max(0, Math.min(100, score));
-
-  // Volume de leads (não afecta score)
-  const leadsMes = { menos_5: 3, '5_15': 10, '15_30': 22, mais_30: 35 }[P7] || 0;
-
-  // Categoria
   const categoria = score < 40 ? 'critico' : score < 70 ? 'em_margem' : 'solido';
 
-  // Custo estimado
-  const midpoint  = { menos_2k: 1500, '2k_5k': 3500, '5k_10k': 7500, mais_10k: 15000 }[P1] || 3500;
-  const multiplier = { individual: 1.0, grupo: 0.7, digital: 0.4, misto: 0.85 }[P9] || 1.0;
-  const valorCliente      = midpoint * multiplier;
-  const vendasPerdidasMes = Math.round(leadsMes * 0.30 * 0.20 * valorCliente);
+  // --- A CONTA: potencial e gap por lançamento ---
+  const listaMid = { menos_500: 300, '500_1k': 750, '1k_5k': 3000, mais_5k: 8000 }[P1] || 750;
+  const precoMid = { menos_100: 60, '100_300': 200, '300_1k': 600, mais_1k: 1500 }[P4] || 200;
+  const CONV = 0.015; // conversão modesta de 1,5%
+  const potencial = Math.round(listaMid * CONV * precoMid);
 
-  // Gaps activos
+  const ultimoMap = { menos_2k: 1000, '2k_10k': 6000, mais_10k: 15000 };
+  const ultimoConhecido = P6 in ultimoMap;
+  const ultimo = ultimoMap[P6] || 0;
+  const gapLancamento = ultimoConhecido ? Math.max(0, potencial - ultimo) : 0;
+
+  const lancAno = { nenhum: 0, um: 1, dois_tres: 2, quatro: 4 }[P5] || 0;
+
+  // --- FALHAS DE LANÇAMENTO activas (mostrar top 3) ---
   const gapsActivos = [];
 
-  if (P3 && P3 !== 'ate_5min') {
-    const pen = { '5min_1h': 5, '1h_4h': 10, '4h_1d': 15, 'mais_1d': 20 };
-    gapsActivos.push({ id: 'A', pen: pen[P3] || 0, versao: P3 });
+  if (P7 && P7 !== 'estruturado') {
+    const pen = { informal: 8, direto: 15, sem_seq: 18 };
+    gapsActivos.push({ id: 'A', pen: pen[P7] || 0, versao: P7 });
   }
-  if (P4 && P4 !== 'sequencia') {
-    const pen = { manual: 10, lista_fria: 15, sem_lista: 20 };
-    gapsActivos.push({ id: 'B', pen: pen[P4] || 0, versao: P4 });
+  if (P8 === 'mao' || P8 === 'sem_proc') {
+    const pen = { mao: 15, sem_proc: 20 };
+    gapsActivos.push({ id: 'B', pen: pen[P8] || 0, versao: P8 });
   }
-  if (P5 && P5 !== 'crm_proprio') {
-    const pen = { notion_excel: 8, mental: 12, nao_acompanha: 15 };
-    gapsActivos.push({ id: 'C', pen: pen[P5] || 0, versao: P5 });
+  if (P6 === 'nao_sei' || P9 === 'porque') {
+    gapsActivos.push({ id: 'C', pen: 12, versao: P9 === 'porque' ? 'porque' : 'nao_sei' });
   }
-  if (P6 === '3_7h' || P6 === 'mais_7h') {
-    const pen = { '3_7h': 8, 'mais_7h': 12 };
-    gapsActivos.push({ id: 'D', pen: pen[P6] || 0, versao: P6 });
-  }
-  if (P6 === 'quase_nao') {
-    gapsActivos.push({ id: 'E', pen: 10, versao: 'quase_nao' });
+  if (P9 === 'sozinho' || P9 === 'tecnica') {
+    gapsActivos.push({ id: 'D', pen: 10, versao: P9 });
   }
 
   const gapsMostrar = gapsActivos.sort((a, b) => b.pen - a.pen).slice(0, 3);
 
-  return { score, categoria, vendasPerdidasMes, gapsMostrar, tag: P8, leadsMes, anti_fit };
+  return {
+    score, categoria, potencial, gapLancamento, ultimoConhecido,
+    lancAno, gapsMostrar, tag: P9, anti_fit
+  };
 }
 
 // ============================================================
@@ -397,7 +394,7 @@ function showAntiFit() {
 // ============================================================
 // RENDER — RELATÓRIO
 // ============================================================
-function renderReport({ score, categoria, vendasPerdidasMes, gapsMostrar, tag }) {
+function renderReport({ score, categoria, potencial, gapLancamento, ultimoConhecido, lancAno, gapsMostrar, tag }) {
   const scoreColor = score < 40
     ? 'var(--terracotta)'
     : score < 70 ? '#A0824A' : 'var(--forest-mid)';
@@ -405,17 +402,26 @@ function renderReport({ score, categoria, vendasPerdidasMes, gapsMostrar, tag })
   const catLabel = { critico: 'Crítico', em_margem: 'Em Margem', solido: 'Sólido' }[categoria];
   const gapCount = gapsMostrar.length;
 
-  const costBlock = vendasPerdidasMes < 200
-    ? `<p class="report__cost-edge">O teu volume actual de contactos é baixo — o custo visível ainda não é alto, mas o padrão que está a instalar-se é o que impede o crescimento.</p>`
-    : `<span class="report__cost-value"></span>
-       <p class="report__cost-note">Calculado com base na tua faturação actual, no volume de contactos que indicaste e numa taxa de perda de 30% por falta de follow-up estruturado. É uma estimativa conservadora.</p>`;
+  // Bloco da conta
+  let costEyebrow, costBlock;
+  if (!ultimoConhecido) {
+    costEyebrow = 'O potencial do teu próximo lançamento';
+    costBlock = `<span class="report__cost-value"></span>
+       <p class="report__cost-note">Com a tua lista e o teu preço, a uma conversão modesta de 1,5%, é este o tecto de um lançamento bem montado. Como nunca mediste o último, não dá para calcular o que ficou em cima da mesa — mas já vês o potencial que estás a deixar por explorar.</p>`;
+  } else if (gapLancamento < 500) {
+    costEyebrow = 'O que deixas em cima da mesa por lançamento';
+    costBlock = `<p class="report__cost-edge">O teu último lançamento já anda perto do potencial da lista actual. O próximo salto não vem de espremer mais esta lista — vem de a fazer crescer e de montar o lançamento com mais sistema.</p>`;
+  } else {
+    const anual = lancAno >= 2 ? ` Multiplicado pelos teus lançamentos por ano, são milhares de euros por ano.` : '';
+    costEyebrow = 'O que deixas em cima da mesa por lançamento';
+    costBlock = `<span class="report__cost-value"></span>
+       <p class="report__cost-note">Potencial da tua lista (a 1,5% de conversão, ao teu preço) menos o que o teu último lançamento faturou. É uma estimativa conservadora.${anual}</p>`;
+  }
 
-  const gapsBlock = gapCount > 0
-    ? gapsMostrar.map(renderGapCard).join('')
-    : '';
+  const gapsBlock = gapCount > 0 ? gapsMostrar.map(renderGapCard).join('') : '';
 
-  const edgeNote = gapCount < 3
-    ? `<p class="report__gaps-edge">Com um score de ${score}, as tuas fugas são pontuais. Mesmo assim, cada uma tem custo — e são corrigíveis rapidamente.</p>`
+  const edgeNote = gapCount > 0 && gapCount < 3
+    ? `<p class="report__gaps-edge">Com um score de ${score}, as tuas falhas são pontuais. Mesmo assim, cada uma tem custo — e são corrigíveis rapidamente.</p>`
     : '';
 
   return `
@@ -426,7 +432,7 @@ function renderReport({ score, categoria, vendasPerdidasMes, gapsMostrar, tag })
       </div>
 
       <div class="report__score-block">
-        <p class="eyebrow report__score-eyebrow">Pontuação do teu funil</p>
+        <p class="eyebrow report__score-eyebrow">Prontidão do teu lançamento</p>
         <div class="report__score-row">
           <span class="report__score-num" style="color:${scoreColor}">0</span>
           <span class="report__score-unit" style="color:${scoreColor}">/100</span>
@@ -439,12 +445,12 @@ function renderReport({ score, categoria, vendasPerdidasMes, gapsMostrar, tag })
       </div>
 
       <div class="report__cost">
-        <p class="eyebrow report__cost-eyebrow">Custo estimado em contactos perdidos este mês</p>
+        <p class="eyebrow report__cost-eyebrow">${costEyebrow}</p>
         ${costBlock}
       </div>
 
       <div class="report__gaps">
-        <p class="eyebrow report__gaps-eyebrow">As tuas ${gapCount || 'principais'} fugas ${gapCount === 1 ? 'principal' : 'principais'}</p>
+        <p class="eyebrow report__gaps-eyebrow">${gapCount ? `As tuas ${gapCount} ${gapCount === 1 ? 'falha principal' : 'falhas principais'}` : 'As tuas falhas principais'}</p>
         <div class="report__gaps-list">
           ${gapsBlock}
           ${edgeNote}
@@ -452,13 +458,13 @@ function renderReport({ score, categoria, vendasPerdidasMes, gapsMostrar, tag })
       </div>
 
       <div class="report__cta">
-        <h3 class="report__cta-title">Identificaste as fugas. O próximo passo é fechá-las.</h3>
-        <p class="report__cta-body">Numa chamada de 30 minutos, analiso o teu caso específico e digo-te exactamente o que construir primeiro. Sem pitch agressivo. Se não fizer sentido para o teu momento, digo-te eu.</p>
+        <h3 class="report__cta-title">Identificaste as falhas. O próximo passo é montar o lançamento certo.</h3>
+        <p class="report__cta-body">Num Diagnóstico de Lançamento de 30 minutos, olho para o teu caso específico e digo-te exactamente o que montar primeiro — e quanto podes recuperar. Sem pitch agressivo. Se não fizer sentido para o teu momento, digo-te eu.</p>
         <label class="report__wa-label" for="waField">WhatsApp (opcional — para te contactar directamente se preferires)</label>
         <input type="tel" id="waField" class="report__wa-input" placeholder="O teu número de WhatsApp">
         <button type="button" class="btn btn--primary report__cta-btn is-locked"
                 id="ctaCalendly">
-          Falar com o Celso — 30 min →
+          Diagnóstico de Lançamento — 30 min →
         </button>
         <p class="report__cta-note" id="ctaNote">
           Deixa o teu WhatsApp para activar o agendamento.
@@ -476,12 +482,12 @@ function renderAntiFit() {
   return `
     <div class="report__antifit-wrap">
       <div class="report__antifit">
-        <h2 class="report__antifit-title">Este sistema não é para ti — ainda.</h2>
+        <h2 class="report__antifit-title">Ainda não é o momento — e digo-to com honestidade.</h2>
         <div class="report__antifit-body">
-          <p>O que construo precisa de dois ingredientes que ainda estás a cultivar: uma audiência minimamente activa no Instagram e faturação que mostre que já tens clientes a pagar pelo teu trabalho.</p>
-          <p>Sem esses dois elementos, o sistema fica vazio — não há contactos para trabalhar, e isso não seria justo para ti nem para mim.</p>
-          <p>Quando estiveres a faturar 2.000€/mês com regularidade e tiveres 500+ seguidores activos, volta cá. Vou estar à espera — e o diagnóstico vai fazer muito mais sentido nessa altura.</p>
-          <p>Até lá, o melhor investimento é na audiência e na oferta. Não no sistema.</p>
+          <p>Um lançamento com sistema precisa de dois ingredientes que ainda estás a construir: uma audiência minimamente activa (lista e Instagram) e uma oferta que já vende.</p>
+          <p>Sem esses dois, não há lançamento para montar — e não seria justo para ti nem para mim vender-te uma solução para um problema que ainda não tens.</p>
+          <p>Quando tiveres uma lista a crescer e um produto que já vendes, volta cá. O diagnóstico vai fazer muito mais sentido — e o potencial vai ser real.</p>
+          <p>Até lá, o melhor investimento é na audiência e na oferta. Não no lançamento.</p>
         </div>
       </div>
     </div>
@@ -494,25 +500,25 @@ function renderAntiFit() {
 function getOpeningText(tag) {
   const texts = {
     tempo:
-      'O teu problema não é falta de vontade. É falta de sistema. Quando tudo passa por ti, o tempo é o primeiro recurso a esgotar-se — e os contactos são os primeiros a perder-se.',
-    perda_silenciosa:
-      'As pessoas que perdes não te avisam que vão embora. Simplesmente deixam de responder. O problema raramente é o preço ou a oferta — é o silêncio que acontece entre o primeiro contacto e a decisão.',
-    sem_processo:
-      'Quando cada venda é diferente, é impossível saber o que está a funcionar. O que parece flexibilidade é, na prática, energia desperdiçada a reinventar o mesmo caminho.',
-    manual_cansativo:
-      'Tens processo — isso é raro. O problema é que o processo depende de ti para funcionar. Um sistema que para quando paras não é um sistema. É um emprego.',
+      'O teu problema não é falta de vontade. É que o lançamento depende todo de ti — e montá-lo à mão consome-te as semanas em que devias estar a criar e a vender.',
+    porque:
+      'Um lançamento que às vezes rende e às vezes não, sem saberes porquê, não é falta de sorte. É falta de sistema. Quando não sabes onde perdes, não sabes o que corrigir.',
+    sozinho:
+      'Fazes tudo sozinho. Isso é raro — e é também o teu limite. Um lançamento que só acontece quando tu o empurras não é um sistema. É um segundo emprego.',
+    tecnica:
+      'Sabes vender o que ensinas. O que te falta é a alavanca técnica — a IA que monta o lançamento em dias em vez de semanas. Não é a tua área, e não tem de ser.',
   };
-  return texts[tag] || texts.perda_silenciosa;
+  return texts[tag] || texts.porque;
 }
 
 function getCategoryText(categoria) {
   const texts = {
     critico:
-      '<strong>O teu funil tem fugas em múltiplos pontos.</strong> Não é um problema — é um ponto de partida. Os sistemas com mais para corrigir são os que têm mais para ganhar. O que vês abaixo são as 3 fugas com maior impacto imediato.',
+      '<strong>O teu lançamento tem falhas em vários pontos.</strong> Não é um problema — é um ponto de partida. Os lançamentos com mais para corrigir são os que têm mais para ganhar. Em baixo estão as falhas com maior impacto imediato.',
     em_margem:
-      '<strong>Tens estrutura, mas estás a deixar contactos pelo caminho.</strong> O problema não é o teu trabalho nem a tua oferta. É o que acontece entre o primeiro contacto e a chamada. As fugas abaixo são corrigíveis — e o impacto é imediato quando o são.',
+      '<strong>Tens audiência e oferta, mas estás a deixar dinheiro em cima da mesa.</strong> O problema não é o teu trabalho nem o teu produto. É o que acontece entre a lista e o carrinho. As falhas em baixo são corrigíveis — e o impacto é imediato.',
     solido:
-      '<strong>Estás acima da média — e isso torna as fugas mais caras.</strong> Quando o resto do sistema funciona bem, uma fuga num ponto específico custa proporcionalmente mais. As fugas abaixo são pequenas em esforço de correcção, grandes em impacto.',
+      '<strong>Estás acima da média — e isso torna as falhas mais caras.</strong> Quando o resto funciona bem, uma falha num ponto específico custa proporcionalmente mais. Em baixo, pequenas em esforço de correcção, grandes em retorno.',
   };
   return texts[categoria] || texts.em_margem;
 }
@@ -520,54 +526,45 @@ function getCategoryText(categoria) {
 function getGapContent({ id, versao }) {
   const GAPS = {
     A: {
-      label: 'TEMPO DE RESPOSTA',
-      title: 'Tempo de resposta — a fuga invisível',
+      label: 'AQUECIMENTO DA LISTA',
+      title: 'Abres o carrinho a uma lista fria',
       body: {
-        moderate: ['5min_1h', '1h_4h'],
-        moderateText:
-          'Respondes entre 5 minutos e 4 horas. Parece razoável — mas quem envia uma DM está, nesse momento, com atenção disponível. Passados os primeiros 5 minutos, essa atenção começa a ir para outro sítio. Não é sobre urgência — é sobre timing.',
-        severeText:
-          'Respondes passadas 4 horas ou mais. Nesse intervalo, a pessoa arrefece, distrai-se, ou simplesmente avança para outra opção. Não porque a tua oferta seja pior — porque foste a segunda a responder. O primeiro contacto é o momento de maior intenção de compra.',
+        informal:
+          'Fazes algum aquecimento, mas informal. O problema é que sem uma sequência estruturada de antecipação, a maior parte da lista chega ao dia da abertura sem contexto — e sem desejo. O lançamento vende-se antes de o carrinho abrir, não depois.',
+        direto:
+          'Abres o carrinho directamente, sem aquecer a lista. É o erro mais caro de todos: pedes a compra a pessoas que não foram preparadas para a querer. A conversão despenca — não porque a oferta é fraca, mas porque chegou fria.',
+        sem_seq:
+          'Não tens sequência de emails montada. Isso significa que o teu lançamento vive só do Instagram e do algoritmo — o único canal que não controlas. A lista é o activo que lança por ti, e está parado.',
       },
     },
     B: {
-      label: 'ACOMPANHAMENTO AUTOMÁTICO',
-      title: 'Acompanhamento ausente — contactos que entram e saem sem decidir',
+      label: 'MONTAGEM DO LANÇAMENTO',
+      title: 'Montado à mão — e por isso inconsistente',
       body: {
-        manual:
-          'Tens lista mas o acompanhamento depende de ti. Isso significa que nos dias em que tens sessões, o follow-up não acontece. Quem não recebe nada nos primeiros 3 dias depois do primeiro contacto tem menos de metade das hipóteses de converter.',
-        lista_fria:
-          'Tens lista mas ela não trabalha. Uma lista que não recebe sequência automática é um activo parado. Cada contacto que entrou e não recebeu acompanhamento imediato perdeu momentum.',
-        sem_lista:
-          'Não tens lista activa. Isso significa que cada contacto que entra depende exclusivamente do teu timing para converter. A lista de emails é o único activo de captação que não depende do algoritmo do Instagram para existir amanhã.',
+        mao:
+          'Montas tudo à mão, de cada vez. Isso tem dois custos: o tempo (semanas que te tiram de criar e ensinar) e a inconsistência (cada lançamento recomeça do zero, sem sistema que garanta o mesmo nível). Um lançamento que depende da tua energia disponível é uma lotaria.',
+        sem_proc:
+          'Não tens processo — cada lançamento é diferente. Sem sistema, é impossível saber o que funcionou e repetir. O que parece flexibilidade é, na prática, energia gasta a reinventar o mesmo caminho de cada vez.',
       },
     },
     C: {
-      label: 'REGISTO DE CONTACTOS',
-      title: 'Contactos sem mapa — o que não está registado não existe',
+      label: 'MEDIÇÃO E CAUSA',
+      title: 'Não sabes onde o lançamento perde',
       body: {
-        notion_excel:
-          'Tens sistema mas não é consistente. O problema com registo inconsistente é que cria uma falsa sensação de controlo. Uma pessoa que ficou "para contactar depois" e não tem data de follow-up registada é, na prática, um contacto perdido com adiamento.',
-        mental:
-          'Acompanhas mentalmente. Isso funciona até 5 pessoas. Acima disso, começas a perder contexto — não sobre quem são, mas sobre onde estão no processo. A pessoa que "fica para a semana" sem estar registada em lado nenhum raramente volta a aparecer na tua agenda.',
-        nao_acompanha:
-          'Não há registo. Isso significa que os teus contactos são invisíveis para ti. Trabalhar sem CRM é como gerir um negócio sem saber o saldo bancário: as decisões ficam sempre atrasadas em relação à realidade.',
+        nao_sei:
+          'Nunca mediste o que o lançamento faz. Sem números, não há diagnóstico — só sensações. Não dá para corrigir o que não se mede, e cada lançamento repete os mesmos buracos por não saberes onde eles estão.',
+        porque:
+          'Sentes que rende menos do que devia, mas não sabes porquê. Quase sempre a resposta está num de três sítios: aquecimento em falta, sequência fraca, ou oferta mal comunicada. O diagnóstico existe precisamente para isolar qual é o teu.',
       },
     },
     D: {
-      label: 'FOLLOW-UP MANUAL',
-      title: 'O follow-up manual está a custar-te mais do que parece',
+      label: 'DEPENDÊNCIA E ALAVANCA',
+      title: 'O lançamento depende todo de ti',
       body: {
-        default:
-          'Passas entre 3 e 7 horas por semana (ou mais) em follow-up manual. Esse tempo tem dois custos: o óbvio, que é o tempo em si; e o invisível, que é a inconsistência. Follow-up manual depende da tua energia e disponibilidade — o que significa que nas semanas mais cheias é exactamente quando menos acontece.',
-      },
-    },
-    E: {
-      label: 'FOLLOW-UP AUSENTE',
-      title: 'Follow-up ausente — contactos quentes a arrefecer sem razão',
-      body: {
-        default:
-          'Quase não fazes follow-up. Não por falta de intenção — por falta de processo. Sem sistema, o follow-up compete com tudo o resto na tua agenda e perde sempre. As pessoas que entram com intenção real de compra precisam de 2 a 5 pontos de contacto antes de decidirem.',
+        sozinho:
+          'Fazes tudo sozinho. Isso limita quantos lançamentos consegues fazer e a que qualidade — porque és tu o gargalo. Um sistema (com IA a montar as peças) tira-te do operacional e devolve-te ao que só tu podes fazer: criar e ensinar.',
+        tecnica:
+          'Falta-te a parte técnica e de IA. É exactamente aí que hoje se ganha velocidade: montar a sequência, a página e a qualificação em dias, não semanas. Não tens de aprender isto — tens de o ter feito por quem já o domina.',
       },
     },
   };
@@ -575,17 +572,7 @@ function getGapContent({ id, versao }) {
   const content = GAPS[id];
   if (!content) return null;
 
-  let body = '';
-  if (id === 'A') {
-    body = content.body.moderate.includes(versao)
-      ? content.body.moderateText
-      : content.body.severeText;
-  } else if (id === 'B' || id === 'C') {
-    body = content.body[versao] || Object.values(content.body)[0];
-  } else {
-    body = content.body.default;
-  }
-
+  const body = content.body[versao] || Object.values(content.body)[0];
   return { label: content.label, title: content.title, body };
 }
 
@@ -602,11 +589,13 @@ function renderGapCard(gap) {
 }
 
 // ============================================================
-// ANIMAÇÕES DO RELATÓRIO
-// ============================================================
-// ============================================================
 // SUPABASE
 // ============================================================
+// Nota: os nomes de coluna (p1_faturacao, etc.) são herdados do diagnóstico
+// antigo. Reutilizados por posição para não obrigar a migração da tabela.
+// Mapeamento actual: p1=lista, p2=audiência, p3=oferta, p4=preço,
+// p5=lançamentos/ano, p6=faturação último, p7=aquecimento, p8=montagem, p9=trava.
+// custo_estimado = gap por lançamento. (Renomear colunas é opcional — ver SPEC.)
 async function saveLeadToSupabase(result, nome, email) {
   try {
     const res = await fetch(CONFIG.supabase.url + '/rest/v1/leads?on_conflict=email', {
@@ -633,7 +622,7 @@ async function saveLeadToSupabase(result, nome, email) {
         categoria:      result.categoria,
         anti_fit:       result.anti_fit,
         gaps:           result.gapsMostrar.map(g => g.id),
-        custo_estimado: result.vendasPerdidasMes
+        custo_estimado: result.gapLancamento
       })
     });
 
@@ -653,9 +642,7 @@ async function saveLeadToSupabase(result, nome, email) {
 // ============================================================
 async function saveLeadToSystemeio(result, nome, email) {
   try {
-    const gapsTexto = result.gapsMostrar
-      .map(g => g.id)
-      .join(', ');
+    const gapsTexto = result.gapsMostrar.map(g => g.id).join(', ');
 
     const res = await fetch('/api/systemeio', {
       method: 'POST',
@@ -666,7 +653,7 @@ async function saveLeadToSystemeio(result, nome, email) {
         fields: [
           { slug: 'quiz_score',     value: String(result.score) },
           { slug: 'quiz_categoria', value: result.categoria },
-          { slug: 'quiz_custo',     value: String(result.vendasPerdidasMes) },
+          { slug: 'quiz_custo',     value: String(result.gapLancamento) },
           { slug: 'quiz_gaps',      value: gapsTexto }
         ],
         tags: ['Lista_Celso']
@@ -682,6 +669,9 @@ async function saveLeadToSystemeio(result, nome, email) {
   }
 }
 
+// ============================================================
+// ANIMAÇÕES DO RELATÓRIO
+// ============================================================
 function animateCountUp(el, target, duration, prefix, suffix) {
   const start = performance.now();
   function update(now) {
@@ -693,7 +683,7 @@ function animateCountUp(el, target, duration, prefix, suffix) {
   requestAnimationFrame(update);
 }
 
-function initReportAnimations(score, vendasPerdidasMes, email) {
+function initReportAnimations(score, gapLancamento, email) {
   const scoreEl = document.querySelector('.report__score-num');
   if (scoreEl) animateCountUp(scoreEl, score, 1200, '', '');
 
@@ -701,8 +691,8 @@ function initReportAnimations(score, vendasPerdidasMes, email) {
   if (bar) setTimeout(() => { bar.style.width = score + '%'; }, 300);
 
   const costEl = document.querySelector('.report__cost-value');
-  if (costEl && vendasPerdidasMes >= 200) {
-    animateCountUp(costEl, vendasPerdidasMes, 1200, '~', '€/mês');
+  if (costEl) {
+    animateCountUp(costEl, gapLancamento, 1200, '~', '€ / lançamento');
   }
 
   const waField = document.getElementById('waField');
@@ -741,7 +731,7 @@ function initReportAnimations(score, vendasPerdidasMes, email) {
       ctaBtn.classList.toggle('is-locked', !hasValue);
       if (ctaNote) {
         ctaNote.textContent = hasValue
-          ? 'Ótimo — clica para agendar a chamada.'
+          ? 'Ótimo — clica para agendar o diagnóstico.'
           : 'Deixa o teu WhatsApp para activar o agendamento.';
       }
     });
@@ -753,10 +743,7 @@ function initReportAnimations(score, vendasPerdidasMes, email) {
       const nome = document.getElementById('gateName').value.trim();
       const email = submittedEmail;
       const baseUrl = 'https://calendly.com/celsop/auditoria';
-      const params = new URLSearchParams({
-        name: nome,
-        email: email
-      });
+      const params = new URLSearchParams({ name: nome, email: email });
 
       window.open(baseUrl + '?' + params.toString(), '_blank');
     });

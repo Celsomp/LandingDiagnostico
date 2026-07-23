@@ -1,8 +1,14 @@
-# Diagnóstico de Leads — Celso Pereira
+# Diagnóstico de Lançamento — Celso Pereira
 
 ## O que é este projecto
-Landing page de diagnóstico self-serve para o Sistema de Leads Qualificadas.
-Uma página HTML/CSS/JS estática, sem framework, compatível com Lovable.dev.
+Landing page de diagnóstico self-serve para o **Sistema de Lançamento com IA**.
+Descobre quanto o especialista deixa em cima da mesa em cada lançamento (a conta:
+potencial da lista × conversão × preço, menos o último lançamento) e agenda um
+Diagnóstico de Lançamento. Página HTML/CSS/JS estática, sem framework.
+
+> Reposicionada em 2026-07-23: de "Sistema de Leads Qualificadas" (coaches) para
+> "Sistema de Lançamento com IA" (especialistas com audiência). A lógica autoritativa
+> vive em `quiz.js`. O `SPEC.md` descreve a versão antiga e está desactualizado.
 
 ## Stack
 - HTML5 semântico
@@ -28,12 +34,12 @@ Português de Portugal absoluto. Nunca PT-BR.
 Frases curtas. Zero "incrível", "transformacional", "amigas".
 
 ## Estrutura da página (ordem)
-1. Hero — fundo forest + padrão diagonal
-2. AuthorityStrip — prova social mínima
-3. GapsPreview — 3 gaps com dados
-4. DiagnosticQuiz — 9 perguntas, 1 por vez, step-by-step
-5. DiagnosticReport — relatório condicional pós-submit
-6. CalendlySection — embed inline
+1. Hero — fundo forest + padrão diagonal ("quanto deixas na mesa por lançamento")
+2. AuthorityStrip — prova social mínima (funis/lançamentos em 5 nichos)
+3. GapsPreview — 3 falhas de lançamento (aquecimento, sequência, sistema vs à mão)
+4. DiagnosticQuiz — 9 perguntas sobre o lançamento, 1 por vez
+5. DiagnosticReport — score de prontidão + gap por lançamento + 3 falhas
+6. CalendlySection — CTA "Diagnóstico de Lançamento — 30 min"
 7. FaqSection — accordion, 5 perguntas
 8. FooterMinimal
 

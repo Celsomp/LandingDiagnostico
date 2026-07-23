@@ -1,4 +1,12 @@
 # SPEC.md — Diagnóstico de Leads · Celso Pereira
+
+> ⚠️ **DESACTUALIZADO (2026-07-23).** Esta spec descreve a versão antiga —
+> "Sistema de Leads Qualificadas" para coaches, com diagnóstico de funil de leads.
+> A landing foi reposicionada para "Sistema de Lançamento com IA" (especialistas com
+> audiência). A lógica autoritativa vive agora em `quiz.js` (perguntas, score de
+> prontidão do lançamento, conta do gap por lançamento, relatório). Não uses esta
+> spec como fonte sem a actualizar primeiro.
+
 > Documento de referência completo para o Claude Code.
 > Gerado em sessão de trabalho com o Celso Pereira.
 > Português de Portugal absoluto. Nunca PT-BR.
