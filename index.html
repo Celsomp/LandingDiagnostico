@@ -6,10 +6,15 @@
   <meta name="description" content="Diagnóstico de Lançamento gratuito. 9 perguntas, 90 segundos. Descobre quanto deixas em cima da mesa em cada lançamento — e porquê.">
   <title>Diagnóstico de Lançamento — Celso Pereira</title>
 
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Sans:ital@0;1&family=Lora:ital,wght@0,400;0,700;1,400;1,700&family=Work+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#0D0D0D">
+  <meta name="color-scheme" content="dark">
+
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+  <!-- Fontes self-hosted (sem CDN) -->
+  <link rel="preload" href="fonts/work-sans-400-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/lora-400-700i-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="fonts.css">
 
   <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
 
@@ -43,7 +48,7 @@
       <p class="eyebrow">Diagnóstico de Lançamento · 90 Segundos</p>
       <div class="hero__divider"></div>
       <h1 class="hero__h1">
-        O teu último lançamento rendeu<br>menos do que devia.<br>Este diagnóstico mostra quanto — e porquê.
+        O teu último lançamento rendeu<br><span class="hero__key">menos do que devia.</span><br>Este diagnóstico mostra quanto — e porquê.
       </h1>
       <p class="hero__sub">
         A maioria dos lançamentos não falha por falta de audiência nem de produto.
@@ -303,7 +308,7 @@
             <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
           </summary>
           <dd class="faq__answer">
-            <p>Não é para ti que é complicado — é para mim. O modelo é done-for-you: dás-me o essencial do teu lançamento, eu monto tudo com o sistema de IA, e tu apareces para criar e ensinar. Não tens de aprender nada técnico.</p>
+            <p>Não é para ti que é complicado — é para mim. O modelo é done-for-you: dás-me o essencial do teu lançamento, eu monto tudo com o sistema de IA, e tu apareces para criar e ensinar. Não tens de ser tu a fazê-lo. Mas vais perceber o que está a ser feito e porquê — explico-te tudo pelo caminho, porque só assim consegues julgar se o trabalho é bom.</p>
           </dd>
         </details>
 
@@ -329,9 +334,9 @@
       <div class="footer__right">
         <p class="footer__handle">@celsopereira.ia</p>
         <nav class="footer__legal" aria-label="Legal">
-          <a href="/privacidade" class="footer__legal-link">Política de Privacidade</a>
+          <a href="privacidade" class="footer__legal-link">Política de Privacidade</a>
           <span aria-hidden="true">·</span>
-          <a href="/privacidade#rgpd" class="footer__legal-link">RGPD</a>
+          <a href="privacidade#rgpd" class="footer__legal-link">RGPD</a>
         </nav>
       </div>
 

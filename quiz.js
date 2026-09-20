@@ -564,7 +564,7 @@ function getGapContent({ id, versao }) {
         sozinho:
           'Fazes tudo sozinho. Isso limita quantos lançamentos consegues fazer e a que qualidade — porque és tu o gargalo. Um sistema (com IA a montar as peças) tira-te do operacional e devolve-te ao que só tu podes fazer: criar e ensinar.',
         tecnica:
-          'Falta-te a parte técnica e de IA. É exactamente aí que hoje se ganha velocidade: montar a sequência, a página e a qualificação em dias, não semanas. Não tens de aprender isto — tens de o ter feito por quem já o domina.',
+          'Falta-te a parte técnica e de IA. É exactamente aí que hoje se ganha velocidade: montar a sequência, a página e a qualificação em dias, não semanas. Não tens de ser tu a fazê-lo — tens de perceber o que está a ser feito e tê-lo feito por quem já o domina.',
       },
     },
   };
@@ -644,7 +644,7 @@ async function saveLeadToSystemeio(result, nome, email) {
   try {
     const gapsTexto = result.gapsMostrar.map(g => g.id).join(', ');
 
-    const res = await fetch('/api/systemeio', {
+    const res = await fetch('/diagnostico/api/systemeio', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
