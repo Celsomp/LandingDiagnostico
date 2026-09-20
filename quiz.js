@@ -16,7 +16,7 @@ const QUESTIONS = [
   },
   {
     id: 'P2', num: '02',
-    text: 'Quantos seguidores activos tens no Instagram — pessoas que comentam, respondem às stories ou enviam DMs?',
+    text: 'Quantos seguidores activos tens no Instagram (pessoas que comentam, respondem às stories ou enviam DMs)?',
     options: [
       { label: 'Menos de 500',            value: 'menos_500' },
       { label: 'Entre 500 e 2.000',       value: '500_2k'   },
@@ -70,7 +70,7 @@ const QUESTIONS = [
     options: [
       { label: 'Sim, com uma sequência estruturada',       value: 'estruturado' },
       { label: 'Faço algo, mas informal',                  value: 'informal'    },
-      { label: 'Não — abro o carrinho directamente',       value: 'direto'      },
+      { label: 'Não, abro o carrinho directamente',       value: 'direto'      },
       { label: 'Não tenho sequência de emails montada',    value: 'sem_seq'     },
     ],
   },
@@ -81,7 +81,7 @@ const QUESTIONS = [
       { label: 'Tenho um sistema/sequência montado que reutilizo', value: 'sistema'    },
       { label: 'Monto tudo à mão, de cada vez',                    value: 'mao'        },
       { label: 'Contrato uma agência ou lançador',                 value: 'agencia'    },
-      { label: 'Não tenho processo — cada lançamento é diferente', value: 'sem_proc'   },
+      { label: 'Não tenho processo: cada lançamento é diferente', value: 'sem_proc'   },
     ],
   },
   {
@@ -90,7 +90,7 @@ const QUESTIONS = [
     options: [
       { label: 'Falta de tempo para o montar',              value: 'tempo'     },
       { label: 'Não sei porque rende menos do que devia',   value: 'porque'    },
-      { label: 'Faço tudo sozinho — depende todo de mim',   value: 'sozinho'   },
+      { label: 'Faço tudo sozinho: depende todo de mim',   value: 'sozinho'   },
       { label: 'Falta-me a parte técnica / de IA',          value: 'tecnica'   },
     ],
   },
@@ -407,10 +407,10 @@ function renderReport({ score, categoria, potencial, gapLancamento, ultimoConhec
   if (!ultimoConhecido) {
     costEyebrow = 'O potencial do teu próximo lançamento';
     costBlock = `<span class="report__cost-value"></span>
-       <p class="report__cost-note">Com a tua lista e o teu preço, a uma conversão modesta de 1,5%, é este o tecto de um lançamento bem montado. Como nunca mediste o último, não dá para calcular o que ficou em cima da mesa — mas já vês o potencial que estás a deixar por explorar.</p>`;
+       <p class="report__cost-note">Com a tua lista e o teu preço, a uma conversão modesta de 1,5%, é este o tecto de um lançamento bem montado. Como nunca mediste o último, não dá para calcular o que ficou em cima da mesa, mas já vês o potencial que estás a deixar por explorar.</p>`;
   } else if (gapLancamento < 500) {
     costEyebrow = 'O que deixas em cima da mesa por lançamento';
-    costBlock = `<p class="report__cost-edge">O teu último lançamento já anda perto do potencial da lista actual. O próximo salto não vem de espremer mais esta lista — vem de a fazer crescer e de montar o lançamento com mais sistema.</p>`;
+    costBlock = `<p class="report__cost-edge">O teu último lançamento já anda perto do potencial da lista actual. O próximo salto não vem de espremer mais esta lista: vem de a fazer crescer e de montar o lançamento com mais sistema.</p>`;
   } else {
     const anual = lancAno >= 2 ? ` Multiplicado pelos teus lançamentos por ano, são milhares de euros por ano.` : '';
     costEyebrow = 'O que deixas em cima da mesa por lançamento';
@@ -421,7 +421,7 @@ function renderReport({ score, categoria, potencial, gapLancamento, ultimoConhec
   const gapsBlock = gapCount > 0 ? gapsMostrar.map(renderGapCard).join('') : '';
 
   const edgeNote = gapCount > 0 && gapCount < 3
-    ? `<p class="report__gaps-edge">Com um score de ${score}, as tuas falhas são pontuais. Mesmo assim, cada uma tem custo — e são corrigíveis rapidamente.</p>`
+    ? `<p class="report__gaps-edge">Com um score de ${score}, as tuas falhas são pontuais. Mesmo assim, cada uma tem custo, e são corrigíveis rapidamente.</p>`
     : '';
 
   return `
@@ -459,12 +459,12 @@ function renderReport({ score, categoria, potencial, gapLancamento, ultimoConhec
 
       <div class="report__cta">
         <h3 class="report__cta-title">Identificaste as falhas. O próximo passo é montar o lançamento certo.</h3>
-        <p class="report__cta-body">Num Diagnóstico de Lançamento de 30 minutos, olho para o teu caso específico e digo-te exactamente o que montar primeiro — e quanto podes recuperar. Sem pitch agressivo. Se não fizer sentido para o teu momento, digo-te eu.</p>
-        <label class="report__wa-label" for="waField">WhatsApp (opcional — para te contactar directamente se preferires)</label>
+        <p class="report__cta-body">Num Diagnóstico de Lançamento de 30 minutos, olho para o teu caso específico e digo-te exactamente o que montar primeiro, e quanto podes recuperar. Sem pitch agressivo. Se não fizer sentido para o teu momento, digo-te eu.</p>
+        <label class="report__wa-label" for="waField">WhatsApp (opcional, para te contactar directamente se preferires)</label>
         <input type="tel" id="waField" class="report__wa-input" placeholder="O teu número de WhatsApp">
         <button type="button" class="btn btn--primary report__cta-btn is-locked"
                 id="ctaCalendly">
-          Diagnóstico de Lançamento — 30 min →
+          Diagnóstico de Lançamento · 30 min →
         </button>
         <p class="report__cta-note" id="ctaNote">
           Deixa o teu WhatsApp para activar o agendamento.
@@ -482,11 +482,11 @@ function renderAntiFit() {
   return `
     <div class="report__antifit-wrap">
       <div class="report__antifit">
-        <h2 class="report__antifit-title">Ainda não é o momento — e digo-to com honestidade.</h2>
+        <h2 class="report__antifit-title">Ainda não é o momento, e digo-to com honestidade.</h2>
         <div class="report__antifit-body">
           <p>Um lançamento com sistema precisa de dois ingredientes que ainda estás a construir: uma audiência minimamente activa (lista e Instagram) e uma oferta que já vende.</p>
-          <p>Sem esses dois, não há lançamento para montar — e não seria justo para ti nem para mim vender-te uma solução para um problema que ainda não tens.</p>
-          <p>Quando tiveres uma lista a crescer e um produto que já vendes, volta cá. O diagnóstico vai fazer muito mais sentido — e o potencial vai ser real.</p>
+          <p>Sem esses dois, não há lançamento para montar, e não seria justo para ti nem para mim vender-te uma solução para um problema que ainda não tens.</p>
+          <p>Quando tiveres uma lista a crescer e um produto que já vendes, volta cá. O diagnóstico vai fazer muito mais sentido, e o potencial vai ser real.</p>
           <p>Até lá, o melhor investimento é na audiência e na oferta. Não no lançamento.</p>
         </div>
       </div>
@@ -500,13 +500,13 @@ function renderAntiFit() {
 function getOpeningText(tag) {
   const texts = {
     tempo:
-      'O teu problema não é falta de vontade. É que o lançamento depende todo de ti — e montá-lo à mão consome-te as semanas em que devias estar a criar e a vender.',
+      'O teu problema não é falta de vontade. É que o lançamento depende todo de ti, e montá-lo à mão consome-te as semanas em que devias estar a criar e a vender.',
     porque:
       'Um lançamento que às vezes rende e às vezes não, sem saberes porquê, não é falta de sorte. É falta de sistema. Quando não sabes onde perdes, não sabes o que corrigir.',
     sozinho:
-      'Fazes tudo sozinho. Isso é raro — e é também o teu limite. Um lançamento que só acontece quando tu o empurras não é um sistema. É um segundo emprego.',
+      'Fazes tudo sozinho. Isso é raro, e é também o teu limite. Um lançamento que só acontece quando tu o empurras não é um sistema. É um segundo emprego.',
     tecnica:
-      'Sabes vender o que ensinas. O que te falta é a alavanca técnica — a IA que monta o lançamento em dias em vez de semanas. Não é a tua área, e não tem de ser.',
+      'Sabes vender o que ensinas. O que te falta é a alavanca técnica: a IA que monta o lançamento em dias em vez de semanas. Não é a tua área, e não tem de ser.',
   };
   return texts[tag] || texts.porque;
 }
@@ -514,11 +514,11 @@ function getOpeningText(tag) {
 function getCategoryText(categoria) {
   const texts = {
     critico:
-      '<strong>O teu lançamento tem falhas em vários pontos.</strong> Não é um problema — é um ponto de partida. Os lançamentos com mais para corrigir são os que têm mais para ganhar. Em baixo estão as falhas com maior impacto imediato.',
+      '<strong>O teu lançamento tem falhas em vários pontos.</strong> Não é um problema, é um ponto de partida. Os lançamentos com mais para corrigir são os que têm mais para ganhar. Em baixo estão as falhas com maior impacto imediato.',
     em_margem:
-      '<strong>Tens audiência e oferta, mas estás a deixar dinheiro em cima da mesa.</strong> O problema não é o teu trabalho nem o teu produto. É o que acontece entre a lista e o carrinho. As falhas em baixo são corrigíveis — e o impacto é imediato.',
+      '<strong>Tens audiência e oferta, mas estás a deixar dinheiro em cima da mesa.</strong> O problema não é o teu trabalho nem o teu produto. É o que acontece entre a lista e o carrinho. As falhas em baixo são corrigíveis, e o impacto é imediato.',
     solido:
-      '<strong>Estás acima da média — e isso torna as falhas mais caras.</strong> Quando o resto funciona bem, uma falha num ponto específico custa proporcionalmente mais. Em baixo, pequenas em esforço de correcção, grandes em retorno.',
+      '<strong>Estás acima da média, e isso torna as falhas mais caras.</strong> Quando o resto funciona bem, uma falha num ponto específico custa proporcionalmente mais. Em baixo, pequenas em esforço de correcção, grandes em retorno.',
   };
   return texts[categoria] || texts.em_margem;
 }
@@ -530,21 +530,21 @@ function getGapContent({ id, versao }) {
       title: 'Abres o carrinho a uma lista fria',
       body: {
         informal:
-          'Fazes algum aquecimento, mas informal. O problema é que sem uma sequência estruturada de antecipação, a maior parte da lista chega ao dia da abertura sem contexto — e sem desejo. O lançamento vende-se antes de o carrinho abrir, não depois.',
+          'Fazes algum aquecimento, mas informal. O problema é que sem uma sequência estruturada de antecipação, a maior parte da lista chega ao dia da abertura sem contexto, e sem desejo. O lançamento vende-se antes de o carrinho abrir, não depois.',
         direto:
-          'Abres o carrinho directamente, sem aquecer a lista. É o erro mais caro de todos: pedes a compra a pessoas que não foram preparadas para a querer. A conversão despenca — não porque a oferta é fraca, mas porque chegou fria.',
+          'Abres o carrinho directamente, sem aquecer a lista. É o erro mais caro de todos: pedes a compra a pessoas que não foram preparadas para a querer. A conversão despenca, não porque a oferta é fraca, mas porque chegou fria.',
         sem_seq:
-          'Não tens sequência de emails montada. Isso significa que o teu lançamento vive só do Instagram e do algoritmo — o único canal que não controlas. A lista é o activo que lança por ti, e está parado.',
+          'Não tens sequência de emails montada. Isso significa que o teu lançamento vive só do Instagram e do algoritmo, o único canal que não controlas. A lista é o activo que lança por ti, e está parado.',
       },
     },
     B: {
       label: 'MONTAGEM DO LANÇAMENTO',
-      title: 'Montado à mão — e por isso inconsistente',
+      title: 'Montado à mão, e por isso inconsistente',
       body: {
         mao:
           'Montas tudo à mão, de cada vez. Isso tem dois custos: o tempo (semanas que te tiram de criar e ensinar) e a inconsistência (cada lançamento recomeça do zero, sem sistema que garanta o mesmo nível). Um lançamento que depende da tua energia disponível é uma lotaria.',
         sem_proc:
-          'Não tens processo — cada lançamento é diferente. Sem sistema, é impossível saber o que funcionou e repetir. O que parece flexibilidade é, na prática, energia gasta a reinventar o mesmo caminho de cada vez.',
+          'Não tens processo: cada lançamento é diferente. Sem sistema, é impossível saber o que funcionou e repetir. O que parece flexibilidade é, na prática, energia gasta a reinventar o mesmo caminho de cada vez.',
       },
     },
     C: {
@@ -552,7 +552,7 @@ function getGapContent({ id, versao }) {
       title: 'Não sabes onde o lançamento perde',
       body: {
         nao_sei:
-          'Nunca mediste o que o lançamento faz. Sem números, não há diagnóstico — só sensações. Não dá para corrigir o que não se mede, e cada lançamento repete os mesmos buracos por não saberes onde eles estão.',
+          'Nunca mediste o que o lançamento faz. Sem números, não há diagnóstico, só sensações. Não dá para corrigir o que não se mede, e cada lançamento repete os mesmos buracos por não saberes onde eles estão.',
         porque:
           'Sentes que rende menos do que devia, mas não sabes porquê. Quase sempre a resposta está num de três sítios: aquecimento em falta, sequência fraca, ou oferta mal comunicada. O diagnóstico existe precisamente para isolar qual é o teu.',
       },
@@ -562,9 +562,9 @@ function getGapContent({ id, versao }) {
       title: 'O lançamento depende todo de ti',
       body: {
         sozinho:
-          'Fazes tudo sozinho. Isso limita quantos lançamentos consegues fazer e a que qualidade — porque és tu o gargalo. Um sistema (com IA a montar as peças) tira-te do operacional e devolve-te ao que só tu podes fazer: criar e ensinar.',
+          'Fazes tudo sozinho. Isso limita quantos lançamentos consegues fazer e a que qualidade, porque és tu o gargalo. Um sistema (com IA a montar as peças) tira-te do operacional e devolve-te ao que só tu podes fazer: criar e ensinar.',
         tecnica:
-          'Falta-te a parte técnica e de IA. É exactamente aí que hoje se ganha velocidade: montar a sequência, a página e a qualificação em dias, não semanas. Não tens de ser tu a fazê-lo — tens de perceber o que está a ser feito e tê-lo feito por quem já o domina.',
+          'Falta-te a parte técnica e de IA. É exactamente aí que hoje se ganha velocidade: montar a sequência, a página e a qualificação em dias, não semanas. Não tens de ser tu a fazê-lo, tens de perceber o que está a ser feito e tê-lo feito por quem já o domina.',
       },
     },
   };
@@ -731,7 +731,7 @@ function initReportAnimations(score, gapLancamento, email) {
       ctaBtn.classList.toggle('is-locked', !hasValue);
       if (ctaNote) {
         ctaNote.textContent = hasValue
-          ? 'Ótimo — clica para agendar o diagnóstico.'
+          ? 'Ótimo, clica para agendar o diagnóstico.'
           : 'Deixa o teu WhatsApp para activar o agendamento.';
       }
     });
