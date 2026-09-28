@@ -39,10 +39,16 @@ function validarEmail(valor) {
   return email;
 }
 
-/** Tira espaços, hífens, pontos e parênteses; o resto tem de ser só dígitos e um '+' inicial. */
+/**
+ * Tira espaços, hífens, pontos e parênteses; o resto tem de ser só dígitos e um '+' inicial.
+ * Normaliza para o formato internacional que a Laura vê no WhatsApp (+351912345678):
+ * 9 dígitos a começar por 9 ou 2 → +351; '00' inicial → '+'; com '+' fica como está.
+ */
 function validarWhatsapp(valor) {
   if (typeof valor !== 'string') return null;
-  const numero = valor.replace(/[\s().-]/g, '');
+  let numero = valor.replace(/[\s().-]/g, '');
+  if (/^[29][0-9]{8}$/.test(numero)) numero = '+351' + numero;
+  else if (numero.startsWith('00')) numero = '+' + numero.slice(2);
   return WHATSAPP_RE.test(numero) ? numero : null;
 }
 

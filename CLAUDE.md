@@ -92,6 +92,9 @@ Regras:
 - **Acção `whatsapp`:** só junta o número se a lead ainda não tiver WhatsApp e tiver sido
   actualizada na última hora. Responde **sempre** `200 {ok:true}` (com email e número válidos),
   haja ou não lead, para não revelar que emails estão na tabela.
+- **WhatsApp gravado em formato internacional** (`+351912345678`, igual ao que a Laura recebe
+  no WhatsApp), nas duas acções: 9 dígitos a começar por 9 ou 2 → acrescenta `+351`;
+  `00` inicial → `+`; já com `+` fica. Outros formatos sem `+` gravam-se como vieram.
 - **`api/systemeio.js`** valida da mesma forma (JSON ≤ 10 KB, email válido, nome ≤ 120,
   só os 4 campos `quiz_*` e a tag `Lista_Celso`). Inválido → `400 {ok:false}` sem chamar o
   systeme.io. Se o quiz passar a enviar outro campo ou tag, acrescenta-o lá.
