@@ -69,6 +69,21 @@ Regras:
 - **`privacidade.html`** é cópia do texto da `/privacidade` do site principal (`conteudo.md`).
   Se o texto lá mudar, muda aqui também.
 
+## Leads — REGRA
+> Desde 2026-09-28. As leads vão para `public.leads` do projecto Supabase **Claude**,
+> sempre pelo servidor.
+
+- **O browser nunca fala com o Supabase.** Nenhuma chave do Supabase (nem a pública)
+  no front-end. O `quiz.js` chama `/diagnostico/api/lead` (como faz com `/diagnostico/api/systemeio`).
+- **`api/lead.js`** (Vercel serverless) lê `LEADS_SUPABASE_URL` e `LEADS_SUPABASE_SECRET`
+  do ambiente, valida tudo no servidor e grava com `origem: 'diagnostico'`: nome, email,
+  respostas (jsonb, P1 a P9), score, categoria, gap_lancamento, anti_fit.
+  Upsert pelo email (índice único em `lower(email)`). A acção `whatsapp` junta o número
+  à lead do mesmo email. Responde só `{ok:true}` / `{ok:false}` e rejeita corpos > 10 KB.
+- **Se mudares as opções de uma pergunta no `quiz.js`**, muda também `RESPOSTAS_VALIDAS`
+  no `api/lead.js`, senão o servidor rejeita a lead.
+- Já não há `config.js` nem `build.js`: a página não tem passo de build.
+
 ## Voz e língua
 Português de Portugal absoluto. Nunca PT-BR.
 Frases curtas. Zero "incrível", "transformacional", "amigas".

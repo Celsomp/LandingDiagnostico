@@ -103,7 +103,6 @@ const answers = {};
 let currentStep = 0;
 const TOTAL = QUESTIONS.length;
 let submittedEmail = '';
-let insertedLeadId = '';
 
 // ============================================================
 // INIT
@@ -265,11 +264,7 @@ async function handleGateSubmit(e) {
     return;
   }
 
-  try {
-    await saveLeadToSupabase(result, name, email);
-  } catch (err) {
-    console.error('[supabase] erro ao guardar lead:', err);
-  }
+  await saveLead(result, name, email);
 
   saveLeadToSystemeio(result, name, email);
 
@@ -589,51 +584,28 @@ function renderGapCard(gap) {
 }
 
 // ============================================================
-// SUPABASE
+// LEADS (servidor: api/lead.js grava em public.leads)
 // ============================================================
-// Nota: os nomes de coluna (p1_faturacao, etc.) são herdados do diagnóstico
-// antigo. Reutilizados por posição para não obrigar a migração da tabela.
-// Mapeamento actual: p1=lista, p2=audiência, p3=oferta, p4=preço,
-// p5=lançamentos/ano, p6=faturação último, p7=aquecimento, p8=montagem, p9=trava.
-// custo_estimado = gap por lançamento. (Renomear colunas é opcional — ver SPEC.)
-async function saveLeadToSupabase(result, nome, email) {
+// O browser não fala com o Supabase: a validação e a chave estão no servidor.
+async function saveLead(result, nome, email) {
   try {
-    const res = await fetch(CONFIG.supabase.url + '/rest/v1/leads?on_conflict=email', {
+    const res = await fetch('/diagnostico/api/lead', {
       method: 'POST',
-      headers: {
-        'apikey':        CONFIG.supabase.key,
-        'Authorization': 'Bearer ' + CONFIG.supabase.key,
-        'Content-Type':  'application/json',
-        'Prefer':        'resolution=merge-duplicates,return=representation'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        nome:           nome,
-        email:          email,
-        p1_faturacao:   answers.P1,
-        p2_audiencia:   answers.P2,
-        p3_resposta:    answers.P3,
-        p4_email:       answers.P4,
-        p5_crm:         answers.P5,
-        p6_followup:    answers.P6,
-        p7_leads_mes:   answers.P7,
-        p8_contexto:    answers.P8,
-        p9_modelo:      answers.P9,
-        score:          result.score,
-        categoria:      result.categoria,
-        anti_fit:       result.anti_fit,
-        gaps:           result.gapsMostrar.map(g => g.id),
-        custo_estimado: result.gapLancamento
+        accao:     'lead',
+        nome:      nome,
+        email:     email,
+        respostas: { ...answers },
+        score:     result.score,
+        categoria: result.categoria,
+        gap:       result.gapLancamento,
+        anti_fit:  result.anti_fit
       })
     });
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data[0] && data[0].id) {
-        insertedLeadId = data[0].id;
-      }
-    }
+    if (!res.ok) console.error('[lead] erro ao guardar lead:', res.status);
   } catch (err) {
-    console.error('[supabase] erro ao guardar lead:', err);
+    console.error('[lead] erro ao guardar lead:', err);
   }
 }
 
@@ -704,19 +676,14 @@ function initReportAnimations(score, gapLancamento, email) {
       if (typeof track === 'function') track('whatsapp_field_filled');
 
       try {
-        const res = await fetch(
-          CONFIG.supabase.url + '/rest/v1/leads?id=eq.' + insertedLeadId, {
-          method: 'PATCH',
-          headers: {
-            'apikey':        CONFIG.supabase.key,
-            'Authorization': 'Bearer ' + CONFIG.supabase.key,
-            'Content-Type':  'application/json',
-            'Prefer':        'return=minimal'
-          },
-          body: JSON.stringify({ whatsapp: wa })
+        const res = await fetch('/diagnostico/api/lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ accao: 'whatsapp', email: email, whatsapp: wa })
         });
+        if (!res.ok) console.error('[lead] erro ao guardar whatsapp:', res.status);
       } catch (err) {
-        console.error('[supabase] erro ao guardar whatsapp:', err);
+        console.error('[lead] erro ao guardar whatsapp:', err);
       }
     }, { once: true });
   }
