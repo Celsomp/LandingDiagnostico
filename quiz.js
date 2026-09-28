@@ -263,7 +263,9 @@ async function handleGateSubmit(e) {
 
   const result = calculateResult();
 
+  // Anti-fit fica guardada (fase "Nutrir 90 dias"), mas não vai para o systeme.io.
   if (result.anti_fit) {
+    await saveLead(result, name, email);
     showAntiFit();
     return;
   }

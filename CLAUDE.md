@@ -87,6 +87,8 @@ Regras:
   respostas (jsonb, P1 a P9), score, categoria, gap_lancamento, anti_fit.
   Upsert pelo email (índice único em `lower(email)`). Responde só `{ok:true}` / `{ok:false}`
   e rejeita corpos > 10 KB.
+- **Anti-fit também fica guardada** (`anti_fit: true`, para a fase "Nutrir 90 dias"), mas
+  **não vai para o systeme.io**: fica fora das sequências de email até decisão em contrário.
 - **Acção `whatsapp`:** só junta o número se a lead ainda não tiver WhatsApp e tiver sido
   actualizada na última hora. Responde **sempre** `200 {ok:true}` (com email e número válidos),
   haja ou não lead, para não revelar que emails estão na tabela.
