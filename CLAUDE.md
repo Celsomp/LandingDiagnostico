@@ -8,20 +8,22 @@ Diagnóstico de Lançamento. Página HTML/CSS/JS estática, sem framework.
 
 > Reposicionada em 2026-07-23: de "Sistema de Leads Qualificadas" (coaches) para
 > "Sistema de Lançamento com IA" (especialistas com audiência). A lógica autoritativa
-> vive em `quiz.js`. O `SPEC.md` descreve a versão antiga e está desactualizado.
+> vive em `quiz.js`.
 
 ## Stack
 - HTML5 semântico
 - CSS com variáveis custom (tokens de marca definidos abaixo)
 - JavaScript vanilla (sem React, sem Vue)
-- Fontes: Lora + Work Sans via Google Fonts · Gloock para logo
-  - (No site principal celsopereira.pt as fontes são self-hosted via Fontsource. Aqui ainda são CDN — alinhar quando houver tempo, não é bloqueante.)
+- Fontes: Lora + Work Sans · Gloock para logo · IBM Plex Mono, self-hosted em
+  `fonts/` e declaradas no `fonts.css` local (sem Google Fonts)
 - Ícones: Lucide (CDN)
-- Embed: Calendly inline widget
+- Agendamento: Cal.com (`https://cal.com/celso-pereira/diagnostico`), aberto num
+  separador novo pelo botão `#ctaMarcacao` do relatório, com `name` e `email`
+  pré-preenchidos. Sem widget embebido.
 
 ## Registo visual — ESCURO-QUENTE
 > Re-vestido em 2026-09-20: de claro-quente para escuro-quente, para condizer com o
-> site principal celsopereira.pt. A lógica do quiz (`quiz.js`), o Calendly, o tracking
+> site principal celsopereira.pt. A lógica do quiz (`quiz.js`), o agendamento, o tracking
 > e o backend `api/` NÃO mudaram — só o visual (`styles.css` / `index.html`).
 > A fonte de verdade dos tokens é o `styles.css`.
 
@@ -111,17 +113,16 @@ Frases curtas. Zero "incrível", "transformacional", "amigas".
 2. AuthorityStrip — prova social mínima (funis/lançamentos em 5 nichos)
 3. GapsPreview — 3 falhas de lançamento (aquecimento, sequência, sistema vs à mão)
 4. DiagnosticQuiz — 9 perguntas sobre o lançamento, 1 por vez
-5. DiagnosticReport — score de prontidão + gap por lançamento + 3 falhas
-6. CalendlySection — CTA "Diagnóstico de Lançamento — 30 min"
+5. DiagnosticReport — score de prontidão + gap por lançamento + 3 falhas + CTA
+   "Diagnóstico de Lançamento · 30 min" (abre o Cal.com)
+6. Testemunhos
 7. FaqSection — accordion, 5 perguntas
 8. FooterMinimal
 
-## Ficheiros a criar
+## Ficheiros
 - index.html (página completa)
-- styles.css (todos os estilos)
-- quiz.js (lógica do quiz, score, relatório condicional)
-- tracking.js (eventos Plausible/PostHog)
-
-## Referência completa
-Ver SPEC.md para copy completo, lógica de score, textos condicionais do relatório,
-pseudo-código do quiz e especificações visuais por componente.
+- styles.css (todos os estilos) · fonts.css (fontes self-hosted)
+- quiz.js (lógica do quiz, score, relatório condicional, CTA do Cal.com)
+- tracking.js (`track()`: Plausible se existir + Meta Pixel com consentimento;
+  `marcacao_cta_click` → `Contact`)
+- consentimento.js · pixel.js · privacidade.html · api/

@@ -464,7 +464,7 @@ function renderReport({ score, categoria, potencial, gapLancamento, ultimoConhec
         <label class="report__wa-label" for="waField">WhatsApp (opcional, para te contactar directamente se preferires)</label>
         <input type="tel" id="waField" class="report__wa-input" placeholder="O teu número de WhatsApp">
         <button type="button" class="btn btn--primary report__cta-btn is-locked"
-                id="ctaCalendly">
+                id="ctaMarcacao">
           Diagnóstico de Lançamento · 30 min →
         </button>
         <p class="report__cta-note" id="ctaNote">
@@ -694,7 +694,7 @@ function initReportAnimations(score, gapLancamento, email) {
     }, { once: true });
   }
 
-  const ctaBtn    = document.getElementById('ctaCalendly');
+  const ctaBtn    = document.getElementById('ctaMarcacao');
   const ctaNote   = document.getElementById('ctaNote');
   const waFieldBtn = document.getElementById('waField');
 
@@ -711,11 +711,11 @@ function initReportAnimations(score, gapLancamento, email) {
 
     ctaBtn.addEventListener('click', () => {
       if (ctaBtn.disabled) return;
-      if (typeof track === 'function') track('calendly_cta_click');
+      if (typeof track === 'function') track('marcacao_cta_click');
 
       const nome = document.getElementById('gateName').value.trim();
       const email = submittedEmail;
-      const baseUrl = 'https://calendly.com/celsop/auditoria';
+      const baseUrl = 'https://cal.com/celso-pereira/diagnostico';
       const params = new URLSearchParams({ name: nome, email: email });
 
       window.open(baseUrl + '?' + params.toString(), '_blank');

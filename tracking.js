@@ -3,8 +3,7 @@
 var FB_STANDARD_EVENTS = {
   quiz_email_submitted: 'Lead',
   quiz_completed: 'CompleteRegistration',
-  calendly_cta_click: 'Contact',
-  calendly_event_scheduled: 'Schedule'
+  marcacao_cta_click: 'Contact'
 };
 
 window.track = function track(eventName) {
@@ -26,13 +25,6 @@ window.track = function track(eventName) {
     }
   }
 };
-
-window.addEventListener('message', function (e) {
-  if (e.origin !== 'https://calendly.com') return;
-  if (e.data && e.data.event === 'calendly.event_scheduled') {
-    window.track('calendly_event_scheduled');
-  }
-});
 
 document.addEventListener('click', function (e) {
   var el = e.target.closest('[data-track]');
