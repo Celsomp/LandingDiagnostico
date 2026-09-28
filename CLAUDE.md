@@ -55,6 +55,9 @@ Regras:
   (dispara sem JavaScript e sem consentimento).
 - **`window.fbq` só existe depois de aceitar.** Qualquer chamada nova a `fbq` passa pelo
   `track()` do `tracking.js`, que também confirma `cpConsentimento.obter().marketing`.
+- **Recusar depois de aceitar** chama `fbq('consent', 'revoke')` e apaga `_fbp` e `_fbc` no
+  domínio actual e nos domínios acima (a Meta grava-os no domínio pai). Voltar a aceitar na
+  mesma visita chama `fbq('consent', 'grant')`. (O site principal ainda não faz isto.)
 - **A mesma chave que o site principal:** `localStorage` `cp-consentimento`, com
   `{ marketing, analise, data (ISO), versao: 1 }`, válido 12 meses. Em
   celsopereira.pt/diagnostico/ a escolha é partilhada com o site; em www.gestoria.pt e no
@@ -74,12 +77,22 @@ Regras:
 > sempre pelo servidor.
 
 - **O browser nunca fala com o Supabase.** Nenhuma chave do Supabase (nem a pública)
-  no front-end. O `quiz.js` chama `/diagnostico/api/lead` (como faz com `/diagnostico/api/systemeio`).
+  no front-end. O `quiz.js` chama `API_BASE + '/lead'` e `API_BASE + '/systemeio'`.
+- **`API_BASE` e não um caminho fixo.** Em celsopereira.pt a página vive em `/diagnostico/`
+  (`/diagnostico/api`); em www.gestoria.pt e no `*.vercel.app` vive na raiz (`/api`).
+  Um caminho fixo `/diagnostico/api/...` dá 404 fora de celsopereira.pt (foi o que partiu
+  as leads de gestoria.pt para o systeme.io a partir de 2026-09-20).
 - **`api/lead.js`** (Vercel serverless) lê `LEADS_SUPABASE_URL` e `LEADS_SUPABASE_SECRET`
   do ambiente, valida tudo no servidor e grava com `origem: 'diagnostico'`: nome, email,
   respostas (jsonb, P1 a P9), score, categoria, gap_lancamento, anti_fit.
-  Upsert pelo email (índice único em `lower(email)`). A acção `whatsapp` junta o número
-  à lead do mesmo email. Responde só `{ok:true}` / `{ok:false}` e rejeita corpos > 10 KB.
+  Upsert pelo email (índice único em `lower(email)`). Responde só `{ok:true}` / `{ok:false}`
+  e rejeita corpos > 10 KB.
+- **Acção `whatsapp`:** só junta o número se a lead ainda não tiver WhatsApp e tiver sido
+  actualizada na última hora. Responde **sempre** `200 {ok:true}` (com email e número válidos),
+  haja ou não lead, para não revelar que emails estão na tabela.
+- **`api/systemeio.js`** valida da mesma forma (JSON ≤ 10 KB, email válido, nome ≤ 120,
+  só os 4 campos `quiz_*` e a tag `Lista_Celso`). Inválido → `400 {ok:false}` sem chamar o
+  systeme.io. Se o quiz passar a enviar outro campo ou tag, acrescenta-o lá.
 - **Se mudares as opções de uma pergunta no `quiz.js`**, muda também `RESPOSTAS_VALIDAS`
   no `api/lead.js`, senão o servidor rejeita a lead.
 - Já não há `config.js` nem `build.js`: a página não tem passo de build.

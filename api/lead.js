@@ -7,6 +7,7 @@
 // Responde só { ok: true } ou { ok: false }. Nunca devolve dados da tabela.
 
 const MAX_BYTES = 10 * 1024;
+const JANELA_WHATSAPP_MS = 60 * 60 * 1000;
 
 // Os valores possíveis de cada pergunta. Têm de bater certo com QUESTIONS no quiz.js.
 const RESPOSTAS_VALIDAS = {
@@ -136,11 +137,24 @@ async function gravarLead(url, chave, lead) {
   return actualizar(url, chave, idDepois, lead);
 }
 
+/**
+ * Junta o WhatsApp só a uma lead sem número e tocada na última hora (o campo aparece logo
+ * a seguir ao relatório). Uma lead antiga ou que já tem número fica como está.
+ */
 async function juntarWhatsapp(url, chave, email, whatsapp) {
   const id = await procurarId(url, chave, email);
-  if (!id) return false;
-  await actualizar(url, chave, id, { whatsapp });
-  return true;
+  if (!id) return;
+  const desde = new Date(Date.now() - JANELA_WHATSAPP_MS).toISOString();
+  const res = await fetch(
+    `${url}/rest/v1/leads?id=eq.${encodeURIComponent(id)}&whatsapp=is.null` +
+      `&actualizado_em=gte.${encodeURIComponent(desde)}`,
+    {
+      method: 'PATCH',
+      headers: { ...cabecalhos(chave), Prefer: 'return=minimal' },
+      body: JSON.stringify({ whatsapp })
+    }
+  );
+  if (!res.ok) throw new Error('whatsapp: ' + res.status + ' ' + (await res.text()));
 }
 
 // ── Handler ──────────────────────────────────────────────────
@@ -177,8 +191,13 @@ export default async function handler(req, res) {
       const email = validarEmail(body.email);
       const whatsapp = validarWhatsapp(body.whatsapp);
       if (!email || !whatsapp) return falhar(res, 400);
-      const encontrou = await juntarWhatsapp(url, chave, email, whatsapp);
-      return encontrou ? res.status(200).json({ ok: true }) : falhar(res, 404);
+      // Responde sempre ok, haja ou não lead: a resposta não pode revelar que emails existem.
+      try {
+        await juntarWhatsapp(url, chave, email, whatsapp);
+      } catch (err) {
+        console.error('[lead] erro ao juntar whatsapp:', err.message);
+      }
+      return res.status(200).json({ ok: true });
     }
 
     if (body.accao === 'lead') {

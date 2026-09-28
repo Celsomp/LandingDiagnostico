@@ -104,6 +104,10 @@ let currentStep = 0;
 const TOTAL = QUESTIONS.length;
 let submittedEmail = '';
 
+// Em celsopereira.pt a página vive em /diagnostico/; em www.gestoria.pt e no *.vercel.app
+// está na raiz. As funções api/ seguem o mesmo prefixo.
+const API_BASE = /^\/diagnostico(\/|$)/.test(location.pathname) ? '/diagnostico/api' : '/api';
+
 // ============================================================
 // INIT
 // ============================================================
@@ -589,7 +593,7 @@ function renderGapCard(gap) {
 // O browser não fala com o Supabase: a validação e a chave estão no servidor.
 async function saveLead(result, nome, email) {
   try {
-    const res = await fetch('/diagnostico/api/lead', {
+    const res = await fetch(API_BASE + '/lead', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -616,7 +620,7 @@ async function saveLeadToSystemeio(result, nome, email) {
   try {
     const gapsTexto = result.gapsMostrar.map(g => g.id).join(', ');
 
-    const res = await fetch('/diagnostico/api/systemeio', {
+    const res = await fetch(API_BASE + '/systemeio', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -676,7 +680,7 @@ function initReportAnimations(score, gapLancamento, email) {
       if (typeof track === 'function') track('whatsapp_field_filled');
 
       try {
-        const res = await fetch('/diagnostico/api/lead', {
+        const res = await fetch(API_BASE + '/lead', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ accao: 'whatsapp', email: email, whatsapp: wa })

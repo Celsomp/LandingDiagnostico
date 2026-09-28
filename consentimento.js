@@ -39,8 +39,27 @@
     return escolha;
   }
 
+  /**
+   * Apaga os cookies do Meta Pixel (_fbp, _fbc). A Meta grava-os no domínio pai
+   * (.gestoria.pt), por isso tenta-se o domínio actual e cada domínio acima dele;
+   * o browser ignora os que não se aplicam.
+   */
+  function apagarCookiesMarketing() {
+    var partes = location.hostname.split('.');
+    var dominios = [''];
+    for (var i = 0; i < partes.length - 1; i++) {
+      dominios.push('; domain=' + partes.slice(i).join('.'));
+    }
+    ['_fbp', '_fbc'].forEach(function (nome) {
+      dominios.forEach(function (dominio) {
+        document.cookie = nome + '=; Max-Age=0; path=/' + dominio;
+      });
+    });
+  }
+
   function definir(escolha) {
     escolha = escolha || {};
+    var anterior = obter();
     var valor = {
       marketing: escolha.marketing === true,
       analise: escolha.analise === true,
@@ -49,6 +68,14 @@
     };
     emMemoria = valor;
     try { localStorage.setItem(CHAVE, JSON.stringify(valor)); } catch (e) {}
+    // Recusou depois de ter aceitado: o Pixel pára de enviar e os cookies saem.
+    if (anterior && anterior.marketing && !valor.marketing) {
+      if (typeof window.fbq === 'function') window.fbq('consent', 'revoke');
+      apagarCookiesMarketing();
+    } else if (valor.marketing && typeof window.fbq === 'function') {
+      // Voltou a aceitar na mesma visita: o Pixel já carregado retoma.
+      window.fbq('consent', 'grant');
+    }
     esconderBanner();
     window.dispatchEvent(new CustomEvent(EVENTO, { detail: valor }));
     return valor;
