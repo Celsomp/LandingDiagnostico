@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Política de Privacidade · Celso Pereira">
-  <title>Política de Privacidade · Celso Pereira</title>
+  <meta name="description" content="Que dados recolho, porquê, com quem os partilho e como os podes controlar.">
+  <title>Política de privacidade · Celso Pereira</title>
 
   <meta name="theme-color" content="#0D0D0D">
   <meta name="color-scheme" content="dark">
@@ -115,6 +115,21 @@
       color: var(--cream);
       margin-bottom: 12px;
     }
+    .privacy-section h3 {
+      font-family: var(--font-serif);
+      font-style: italic;
+      font-weight: 500;
+      font-size: 17px;
+      color: var(--cream);
+      margin: 20px 0 6px;
+    }
+    .privacy-abertura {
+      font-family: var(--font-sans);
+      font-size: 17px;
+      color: var(--fg);
+      line-height: 1.6;
+      margin-bottom: 48px;
+    }
     .privacy-section p {
       font-family: var(--font-sans);
       font-weight: 400;
@@ -163,66 +178,87 @@
   <main class="privacy-content">
     <div class="privacy-content__inner">
 
-      <p class="privacy-eyebrow">Política de Privacidade</p>
-      <h1 class="privacy-title">Como tratamos os teus dados</h1>
-      <p class="privacy-date">Última actualização: Maio 2026</p>
+      <!-- Texto de specs/conteudo.md (site principal), secção PÁGINA /PRIVACIDADE, sem as partes [SÓ SE O GA4]. -->
+      <p class="privacy-eyebrow">Privacidade</p>
+      <h1 class="privacy-title">Política de privacidade.</h1>
+      <p class="privacy-date">Última actualização: <time datetime="2026-09-27">27 de Setembro de 2026</time></p>
+      <p class="privacy-abertura">Esta página explica que dados recolho, porquê, com quem os partilho e como os controlas. Escrevi-a em linguagem simples. Se alguma coisa não ficar clara, escreve-me.</p>
 
       <div class="privacy-section">
-        <h2>Quem somos</h2>
-        <p>Celso Pereira, actividade individual, Portugal.</p>
-        <p>Contacto: <a href="mailto:celsopereira79@gmail.com">celsopereira79@gmail.com</a><br>
-        Website: <a href="https://diagnostico-leads-celso.vercel.app">https://diagnostico-leads-celso.vercel.app</a></p>
+        <h2>Quem é responsável pelos teus dados</h2>
+        <p>Celso Pereira, actividade individual, em Portugal.<br>
+        NIF: 224937910<br>
+        Morada: Rua do Feijó, 2810-056 Almada<br>
+        Email: <a href="mailto:eu@celsopereira.pt">eu@celsopereira.pt</a></p>
       </div>
 
       <div class="privacy-section">
-        <h2>Que dados recolhemos</h2>
+        <h2>Que dados recolho e porquê</h2>
+
+        <h3>Quando fazes o Diagnóstico de Lançamento.</h3>
+        <p>Recolho o teu nome, o teu email, as respostas às 9 perguntas e o resultado calculado. O WhatsApp só se o deres. Uso-os para te enviar o relatório, para te enviar emails sobre lançamentos (podes cancelar em qualquer email) e para preparar a reunião, se a agendares. Base legal: o teu consentimento e o teu pedido de diagnóstico.</p>
+
+        <h3>Quando agendas uma reunião.</h3>
+        <p>O agendamento é feito no Calendly, com o teu nome, email e a data escolhida. Uso estes dados para marcar e preparar a reunião. Base legal: diligências antes de um possível contrato, a teu pedido.</p>
+
+        <h3>Quando falas com a Laura no WhatsApp.</h3>
+        <p>A Laura é uma assistente de inteligência artificial, não uma pessoa. Recebe o que escreves e os contactos que decidires dar. Uso a conversa para responder às tuas dúvidas, perceber se faz sentido falarmos e registar o teu pedido. As mensagens passam pelo WhatsApp, da Meta, e são processadas pela OpenAI, que também transcreve as mensagens de voz. A conversa fica guardada numa base de dados alojada no Railway, para a Laura se lembrar do que já falaram. Base legal: o teu pedido de contacto.</p>
+
+        <h3>Quando me escreves por email.</h3>
+        <p>Uso o teu email e o que escreves só para te responder.</p>
+
+        <h3>Estatísticas do site.</h3>
+        <p>Uso o Vercel Web Analytics para saber quantas pessoas visitam o site e que páginas vêem. Não usa cookies e não te identifica: os dados são agregados. Base legal: interesse legítimo em perceber se o site funciona.</p>
+
+        <h3>Cookies de marketing (Meta Pixel).</h3>
+        <p>Só são activados se aceitares. Servem para medir se os meus anúncios no Instagram e no Facebook funcionam, e para mostrar anúncios a quem já visitou o site. Base legal: o teu consentimento, que podes retirar a qualquer momento.</p>
+      </div>
+
+      <div class="privacy-section">
+        <h2>Com quem partilho os teus dados</h2>
+        <p>Não vendo os teus dados a ninguém. Uso estes serviços para o site e o negócio funcionarem:</p>
         <ul>
-          <li>Nome e endereço de email (obrigatórios para receber o relatório de diagnóstico)</li>
-          <li>Número de WhatsApp (opcional, para contacto directo)</li>
-          <li>Respostas ao questionário de diagnóstico</li>
-          <li>Score, categoria e estimativa calculados pelo sistema</li>
+          <li><strong>Vercel:</strong> alojamento do site e estatísticas.</li>
+          <li><strong>Supabase:</strong> base de dados onde ficam os pedidos de diagnóstico e contacto.</li>
+          <li><strong>Systeme.io:</strong> envio de emails.</li>
+          <li><strong>Calendly:</strong> agendamento de reuniões.</li>
+          <li><strong>Meta:</strong> WhatsApp e, só com o teu consentimento, o Meta Pixel.</li>
+          <li><strong>OpenAI:</strong> processa as conversas com a Laura, incluindo a transcrição de mensagens de voz.</li>
+          <li><strong>Railway:</strong> alojamento da Laura e da base de dados onde ficam as conversas.</li>
         </ul>
+        <p>Alguns destes serviços estão fora da União Europeia, sobretudo nos Estados Unidos. Nesses casos, a transferência é feita com as garantias que o RGPD exige, como o Quadro de Privacidade de Dados UE-EUA ou cláusulas contratuais-tipo.</p>
       </div>
 
       <div class="privacy-section">
-        <h2>Para que usamos os dados</h2>
+        <h2>Durante quanto tempo guardo os dados</h2>
         <ul>
-          <li>Enviar o relatório de diagnóstico personalizado</li>
-          <li>Enviar sequência de emails relacionados com o serviço (pode cancelar em qualquer email)</li>
-          <li>Contacto directo via WhatsApp se fornecido</li>
-          <li>Agendamento de chamada via Calendly</li>
+          <li><strong>Pedidos de diagnóstico e contacto, sem relação comercial:</strong> até 24 meses depois do último contacto.</li>
+          <li><strong>Conversas com a Laura:</strong> até 12 meses.</li>
+          <li><strong>Clientes:</strong> 10 anos depois do fim do serviço, pelas obrigações fiscais e contabilísticas.</li>
+          <li><strong>A tua escolha sobre cookies:</strong> 12 meses. Depois volto a perguntar.</li>
+          <li><strong>Cookies do Meta Pixel:</strong> até 90 dias.</li>
         </ul>
-      </div>
-
-      <div class="privacy-section">
-        <h2>Com quem partilhamos</h2>
-        <ul>
-          <li>Supabase (armazenamento de dados): servidores na UE</li>
-          <li>Systeme.io (email marketing): pode consultar a política em <a href="https://systeme.io" target="_blank" rel="noopener">systeme.io</a></li>
-          <li>Calendly (agendamento): pode consultar a política em <a href="https://calendly.com" target="_blank" rel="noopener">calendly.com</a></li>
-        </ul>
-        <p>Não vendemos nem partilhamos dados com terceiros para fins publicitários.</p>
-      </div>
-
-      <div class="privacy-section">
-        <h2>Durante quanto tempo guardamos</h2>
-        <p>Os teus dados são guardados enquanto forem necessários para o serviço. Podes pedir a eliminação a qualquer momento.</p>
-      </div>
-
-      <div id="rgpd" class="privacy-section">
-        <h2>Os teus direitos (RGPD)</h2>
-        <p>Tens direito a: aceder aos teus dados, corrigir, eliminar, portabilidade e oposição ao tratamento.</p>
-        <p>Para exercer estes direitos: <a href="mailto:celsopereira79@gmail.com">celsopereira79@gmail.com</a></p>
       </div>
 
       <div class="privacy-section">
         <h2>Cookies</h2>
-        <p>Este website não usa cookies de rastreio. Apenas cookies técnicos essenciais ao funcionamento.</p>
+        <ul>
+          <li><strong>Necessários:</strong> guardam a tua escolha sobre cookies no teu navegador. Não precisam de consentimento.</li>
+          <li><strong>Marketing:</strong> Meta Pixel (o cookie <code>_fbp</code>, até 90 dias). Só com o teu consentimento.</li>
+        </ul>
+        <p>Podes mudar a tua escolha quando quiseres, em "Preferências de cookies", no rodapé de qualquer página.</p>
+      </div>
+
+      <div id="rgpd" class="privacy-section">
+        <h2>Os teus direitos</h2>
+        <p>Podes pedir para ver, corrigir ou apagar os teus dados, limitar ou opor-te ao seu uso, recebê-los num formato que possas levar para outro lado, e retirar o consentimento a qualquer momento. Retirar o consentimento não afecta o que foi feito antes.</p>
+        <p>Para qualquer destes pedidos, escreve para <a href="mailto:eu@celsopereira.pt">eu@celsopereira.pt</a>. Respondo no prazo de 1 mês.</p>
+        <p>Se achares que os teus dados não foram bem tratados, podes apresentar queixa à Comissão Nacional de Protecção de Dados (CNPD): <a href="https://www.cnpd.pt" target="_blank" rel="noopener">https://www.cnpd.pt</a></p>
       </div>
 
       <div class="privacy-section">
-        <h2>Contacto</h2>
-        <p>Para qualquer questão sobre privacidade: <a href="mailto:celsopereira79@gmail.com">celsopereira79@gmail.com</a></p>
+        <h2>Alterações</h2>
+        <p>Se esta política mudar, actualizo a data no topo da página.</p>
       </div>
 
     </div>
@@ -236,21 +272,37 @@
         <span class="footer__logo" aria-label="Celso Pereira">CP</span>
         <div class="footer__brand-text">
           <p class="footer__name">Celso Pereira</p>
-          <p class="footer__tagline">Automação para Coaches · Portugal · 2026</p>
+          <p class="footer__tagline">Lançamentos · Portugal · 2026</p>
         </div>
       </div>
 
       <div class="footer__right">
         <p class="footer__handle">@celsopereira.ia</p>
         <nav class="footer__legal" aria-label="Legal">
-          <a href="/privacidade" class="footer__legal-link">Política de Privacidade</a>
+          <a href="/privacidade" class="footer__legal-link">Política de privacidade</a>
           <span aria-hidden="true">·</span>
-          <a href="/privacidade#rgpd" class="footer__legal-link">RGPD</a>
+          <button type="button" class="footer__legal-link" data-cookies-abrir>Preferências de cookies</button>
         </nav>
       </div>
 
     </div>
   </footer>
+
+  <!-- Banner de consentimento (igual ao do index.html). Esta página não carrega o Pixel. -->
+  <div class="banner-cookies" role="region" aria-label="Consentimento de cookies" tabindex="-1" hidden data-banner-cookies>
+    <div class="banner-cookies__caixa">
+      <p class="banner-cookies__texto">
+        Uso cookies de marketing para medir se os meus anúncios funcionam. Só os activo se aceitares. As estatísticas do site não usam cookies.
+        <a href="/privacidade" class="banner-cookies__link">Política de privacidade →</a>
+      </p>
+      <div class="banner-cookies__botoes">
+        <button type="button" class="banner-cookies__botao" data-cookies-aceitar>Aceitar</button>
+        <button type="button" class="banner-cookies__botao" data-cookies-recusar>Recusar</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="consentimento.js" defer></script>
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {

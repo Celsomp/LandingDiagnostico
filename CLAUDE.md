@@ -46,6 +46,29 @@ Regras:
   variantes claras (`--terracotta-lit`, `--forest-lit`, `--amber-lit`).
 - Títulos Lora · corpo Work Sans · labels/números do relatório em mono.
 
+## Consentimento de cookies — REGRA
+> Desde 2026-09-28. Alinhado com o site principal (`src/scripts/consentimento.ts` em celsopereira.pt).
+
+- **Nenhum script de marketing ou análise carrega sem consentimento.** O Meta Pixel vive em
+  `pixel.js` e só carrega dentro de `cpConsentimento.quandoConsentir('marketing', …)`.
+  Nunca pôr o código do Pixel inline no `<head>`, e **nunca o `<noscript>`** do Pixel
+  (dispara sem JavaScript e sem consentimento).
+- **`window.fbq` só existe depois de aceitar.** Qualquer chamada nova a `fbq` passa pelo
+  `track()` do `tracking.js`, que também confirma `cpConsentimento.obter().marketing`.
+- **A mesma chave que o site principal:** `localStorage` `cp-consentimento`, com
+  `{ marketing, analise, data (ISO), versao: 1 }`, válido 12 meses. Em
+  celsopereira.pt/diagnostico/ a escolha é partilhada com o site; em www.gestoria.pt e no
+  `*.vercel.app` o domínio é outro e o banner volta a perguntar.
+- **Banner** (`consentimento.js` + CSS `.banner-cookies` no `styles.css`): barra fixa em baixo,
+  não modal, ink com hairline sand. "Aceitar" e "Recusar" com exactamente o mesmo estilo
+  (ghost, nunca terracotta). Texto do `specs/conteudo.md` do site principal, secção BANNER DE
+  COOKIES, versão "só com Meta Pixel". Se entrar GA4: acrescentar `'analise'` a
+  `CATEGORIAS_ACTIVAS` e trocar para o texto "se também houver GA4".
+- **Rodapé:** "Política de privacidade" → `/privacidade` (absoluto: em celsopereira.pt abre a
+  página do site principal) · "Preferências de cookies" (`data-cookies-abrir`, reabre o banner).
+- **`privacidade.html`** é cópia do texto da `/privacidade` do site principal (`conteudo.md`).
+  Se o texto lá mudar, muda aqui também.
+
 ## Voz e língua
 Português de Portugal absoluto. Nunca PT-BR.
 Frases curtas. Zero "incrível", "transformacional", "amigas".

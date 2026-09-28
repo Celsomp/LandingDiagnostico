@@ -20,23 +20,8 @@
 
   <link rel="stylesheet" href="styles.css">
 
-  <!-- Meta Pixel Code -->
-  <script>
-  !function(f,b,e,v,n,t,s)
-  {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-  n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-  if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-  n.queue=[];t=b.createElement(e);t.async=!0;
-  t.src=v;s=b.getElementsByTagName(e)[0];
-  s.parentNode.insertBefore(t,s)}(window, document,'script',
-  'https://connect.facebook.net/en_US/fbevents.js');
-  fbq('init', '1411141222388292');
-  fbq('track', 'PageView');
-  </script>
-  <noscript><img height="1" width="1" style="display:none"
-  src="https://www.facebook.com/tr?id=1411141222388292&ev=PageView&noscript=1"
-  /></noscript>
-  <!-- End Meta Pixel Code -->
+  <!-- Meta Pixel: carrega em pixel.js, só depois de consentimento de marketing.
+       Sem <noscript>: dispararia sem JavaScript e sem consentimento. -->
 </head>
 <body>
 
@@ -334,16 +319,32 @@
       <div class="footer__right">
         <p class="footer__handle">@celsopereira.ia</p>
         <nav class="footer__legal" aria-label="Legal">
-          <a href="privacidade" class="footer__legal-link">Política de Privacidade</a>
+          <a href="/privacidade" class="footer__legal-link">Política de privacidade</a>
           <span aria-hidden="true">·</span>
-          <a href="privacidade#rgpd" class="footer__legal-link">RGPD</a>
+          <button type="button" class="footer__legal-link" data-cookies-abrir>Preferências de cookies</button>
         </nav>
       </div>
 
     </div>
   </footer>
 
+  <!-- Banner de consentimento: barra fixa em baixo, não modal. Aceitar e Recusar com o mesmo estilo. -->
+  <div class="banner-cookies" role="region" aria-label="Consentimento de cookies" tabindex="-1" hidden data-banner-cookies>
+    <div class="banner-cookies__caixa">
+      <p class="banner-cookies__texto">
+        Uso cookies de marketing para medir se os meus anúncios funcionam. Só os activo se aceitares. As estatísticas do site não usam cookies.
+        <a href="/privacidade" class="banner-cookies__link">Política de privacidade →</a>
+      </p>
+      <div class="banner-cookies__botoes">
+        <button type="button" class="banner-cookies__botao" data-cookies-aceitar>Aceitar</button>
+        <button type="button" class="banner-cookies__botao" data-cookies-recusar>Recusar</button>
+      </div>
+    </div>
+  </div>
+
   <script src="config.js"></script>
+  <script src="consentimento.js" defer></script>
+  <script src="pixel.js" defer></script>
   <script src="quiz.js" defer></script>
   <script src="tracking.js" defer></script>
   <script>

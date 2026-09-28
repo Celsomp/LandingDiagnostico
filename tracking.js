@@ -14,7 +14,10 @@ window.track = function track(eventName) {
     console.log('[track]', eventName);
   }
 
-  if (typeof window.fbq === 'function') {
+  // Meta só com consentimento de marketing (consentimento.js). O fbq só existe depois
+  // de aceitar, mas confirma-se aqui também: nenhum evento sai sem escolha válida.
+  var escolha = window.cpConsentimento && window.cpConsentimento.obter();
+  if (escolha && escolha.marketing === true && typeof window.fbq === 'function') {
     var standardEvent = FB_STANDARD_EVENTS[eventName];
     if (standardEvent) {
       window.fbq('track', standardEvent);
