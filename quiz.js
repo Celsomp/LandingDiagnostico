@@ -463,13 +463,10 @@ function renderReport({ score, categoria, potencial, gapLancamento, ultimoConhec
         <p class="report__cta-body">Num Diagnóstico de Lançamento de 30 minutos, olho para o teu caso específico e digo-te exactamente o que montar primeiro, e quanto podes recuperar. Sem pitch agressivo. Se não fizer sentido para o teu momento, digo-te eu.</p>
         <label class="report__wa-label" for="waField">WhatsApp (opcional, para te contactar directamente se preferires)</label>
         <input type="tel" id="waField" class="report__wa-input" placeholder="O teu número de WhatsApp">
-        <button type="button" class="btn btn--primary report__cta-btn is-locked"
+        <button type="button" class="btn btn--primary report__cta-btn"
                 id="ctaMarcacao">
           Diagnóstico de Lançamento · 30 min →
         </button>
-        <p class="report__cta-note" id="ctaNote">
-          Deixa o teu WhatsApp para activar o agendamento.
-        </p>
       </div>
 
     </div>
@@ -673,44 +670,36 @@ function initReportAnimations(score, gapLancamento, email) {
     animateCountUp(costEl, gapLancamento, 1200, '~', '€ / lançamento');
   }
 
+  // O WhatsApp é opcional: grava-se uma vez, no blur ou no clique do CTA (o que vier
+  // primeiro). O clique também grava porque nem todos os browsers tiram o foco do campo
+  // ao clicar num botão, e um blur com o campo vazio não pode gastar a gravação.
   const waField = document.getElementById('waField');
-  if (waField) {
-    waField.addEventListener('blur', async () => {
-      const wa = waField.value.trim();
-      if (!wa) return;
+  let waGuardado = false;
 
-      if (typeof track === 'function') track('whatsapp_field_filled');
+  function guardarWhatsapp() {
+    if (!waField || waGuardado) return;
+    const wa = waField.value.trim();
+    if (!wa) return;
+    waGuardado = true;
 
-      try {
-        const res = await fetch(API_BASE + '/lead', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ accao: 'whatsapp', email: email, whatsapp: wa })
-        });
-        if (!res.ok) console.error('[lead] erro ao guardar whatsapp:', res.status);
-      } catch (err) {
-        console.error('[lead] erro ao guardar whatsapp:', err);
-      }
-    }, { once: true });
+    if (typeof track === 'function') track('whatsapp_field_filled');
+
+    fetch(API_BASE + '/lead', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ accao: 'whatsapp', email: email, whatsapp: wa }),
+      keepalive: true
+    })
+      .then(res => { if (!res.ok) console.error('[lead] erro ao guardar whatsapp:', res.status); })
+      .catch(err => console.error('[lead] erro ao guardar whatsapp:', err));
   }
 
-  const ctaBtn    = document.getElementById('ctaMarcacao');
-  const ctaNote   = document.getElementById('ctaNote');
-  const waFieldBtn = document.getElementById('waField');
+  if (waField) waField.addEventListener('blur', guardarWhatsapp);
 
-  if (waFieldBtn && ctaBtn) {
-    waFieldBtn.addEventListener('input', () => {
-      const hasValue = waFieldBtn.value.trim().length >= 9;
-      ctaBtn.classList.toggle('is-locked', !hasValue);
-      if (ctaNote) {
-        ctaNote.textContent = hasValue
-          ? 'Ótimo, clica para agendar o diagnóstico.'
-          : 'Deixa o teu WhatsApp para activar o agendamento.';
-      }
-    });
-
+  const ctaBtn = document.getElementById('ctaMarcacao');
+  if (ctaBtn) {
     ctaBtn.addEventListener('click', () => {
-      if (ctaBtn.disabled) return;
+      guardarWhatsapp();
       if (typeof track === 'function') track('marcacao_cta_click');
 
       const nome = document.getElementById('gateName').value.trim();

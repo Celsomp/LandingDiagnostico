@@ -939,20 +939,6 @@ a {
   width: 100%;
 }
 
-.report__cta-btn.is-locked {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.report__cta-note {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--fg-meta);
-  text-align: center;
-  margin-top: -4px;
-}
-
 /* 5.6 Anti-fit */
 .report__antifit-wrap {
   max-width: 640px;

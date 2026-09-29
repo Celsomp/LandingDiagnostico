@@ -20,6 +20,10 @@ Diagnóstico de Lançamento. Página HTML/CSS/JS estática, sem framework.
 - Agendamento: Cal.com (`https://cal.com/celso-pereira/diagnostico`), aberto num
   separador novo pelo botão `#ctaMarcacao` do relatório, com `name` e `email`
   pré-preenchidos. Sem widget embebido.
+- WhatsApp no fim do relatório: **opcional de verdade** (desde 2026-09-29). O botão
+  `#ctaMarcacao` está sempre activo e abre sempre o Cal.com; não há bloqueio nem nota.
+  O número grava-se uma vez (acção `whatsapp`), no blur do campo ou no clique do CTA,
+  o que vier primeiro (o Safari não tira o foco do campo ao clicar num botão).
 
 ## Registo visual — ESCURO-QUENTE
 > Re-vestido em 2026-09-20: de claro-quente para escuro-quente, para condizer com o
