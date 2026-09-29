@@ -35,6 +35,11 @@ Diagnóstico de Lançamento. Página HTML/CSS/JS estática, sem framework.
   Está no `vercel.json` (`redirects` com `has` `type: "host"`). O redirect só depende do
   host, por isso não toca nos pedidos que chegam por `landing-diagnostico-two.vercel.app`.
   **Nunca** trocar para um redirect sem `has`: partia o `/diagnostico/` do site principal.
+- **Canonical:** a página responde em celsopereira.pt/diagnostico/ e em
+  `landing-diagnostico-two.vercel.app`. Para o Google não indexar o endereço da Vercel,
+  o `index.html` tem `<link rel="canonical" href="https://celsopereira.pt/diagnostico/">`
+  e o `privacidade.html` aponta para `https://celsopereira.pt/privacidade` (a página do
+  site principal, de onde o texto é copiado). Página nova → canonical absoluto em celsopereira.pt.
 
 ## Registo visual — ESCURO-QUENTE
 > Re-vestido em 2026-09-20: de claro-quente para escuro-quente, para condizer com o
