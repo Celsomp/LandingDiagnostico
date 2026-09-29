@@ -1,6 +1,20 @@
 {
   "outputDirectory": ".",
   "framework": null,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "gestoria.pt" }],
+      "destination": "https://celsopereira.pt/diagnostico/",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.gestoria.pt" }],
+      "destination": "https://celsopereira.pt/diagnostico/",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/privacidade", "destination": "/privacidade.html" },
     { "source": "/playbook",        "destination": "https://backoffice-auditoria.vercel.app/playbook" },

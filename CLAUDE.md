@@ -25,6 +25,17 @@ Diagnóstico de Lançamento. Página HTML/CSS/JS estática, sem framework.
   O número grava-se uma vez (acção `whatsapp`), no blur do campo ou no clique do CTA,
   o que vier primeiro (o Safari não tira o foco do campo ao clicar num botão).
 
+## Domínios — REGRA
+> Desde 2026-09-29.
+
+- **A casa da página é `https://celsopereira.pt/diagnostico/`.** O site principal serve-a
+  por proxy a partir de `landing-diagnostico-two.vercel.app`.
+- **`gestoria.pt` e `www.gestoria.pt` redireccionam (308)** para
+  `https://celsopereira.pt/diagnostico/`, qualquer que seja o caminho (inclui `/api/*`).
+  Está no `vercel.json` (`redirects` com `has` `type: "host"`). O redirect só depende do
+  host, por isso não toca nos pedidos que chegam por `landing-diagnostico-two.vercel.app`.
+  **Nunca** trocar para um redirect sem `has`: partia o `/diagnostico/` do site principal.
+
 ## Registo visual — ESCURO-QUENTE
 > Re-vestido em 2026-09-20: de claro-quente para escuro-quente, para condizer com o
 > site principal celsopereira.pt. A lógica do quiz (`quiz.js`), o agendamento, o tracking
@@ -66,8 +77,8 @@ Regras:
   mesma visita chama `fbq('consent', 'grant')`. (O site principal ainda não faz isto.)
 - **A mesma chave que o site principal:** `localStorage` `cp-consentimento`, com
   `{ marketing, analise, data (ISO), versao: 1 }`, válido 12 meses. Em
-  celsopereira.pt/diagnostico/ a escolha é partilhada com o site; em www.gestoria.pt e no
-  `*.vercel.app` o domínio é outro e o banner volta a perguntar.
+  celsopereira.pt/diagnostico/ a escolha é partilhada com o site; no `*.vercel.app` o
+  domínio é outro e o banner volta a perguntar (gestoria.pt já não serve a página, redirecciona).
 - **Banner** (`consentimento.js` + CSS `.banner-cookies` no `styles.css`): barra fixa em baixo,
   não modal, ink com hairline sand. "Aceitar" e "Recusar" com exactamente o mesmo estilo
   (ghost, nunca terracotta). Texto do `specs/conteudo.md` do site principal, secção BANNER DE
@@ -85,7 +96,8 @@ Regras:
 - **O browser nunca fala com o Supabase.** Nenhuma chave do Supabase (nem a pública)
   no front-end. O `quiz.js` chama `API_BASE + '/lead'` e `API_BASE + '/systemeio'`.
 - **`API_BASE` e não um caminho fixo.** Em celsopereira.pt a página vive em `/diagnostico/`
-  (`/diagnostico/api`); em www.gestoria.pt e no `*.vercel.app` vive na raiz (`/api`).
+  (`/diagnostico/api`); no `*.vercel.app` vive na raiz (`/api`). (Em gestoria.pt também
+  vivia na raiz até 2026-09-29; agora esse domínio redirecciona, ver Domínios.)
   Um caminho fixo `/diagnostico/api/...` dá 404 fora de celsopereira.pt (foi o que partiu
   as leads de gestoria.pt para o systeme.io a partir de 2026-09-20).
 - **`api/lead.js`** (Vercel serverless) lê `LEADS_SUPABASE_URL` e `LEADS_SUPABASE_SECRET`
