@@ -16,7 +16,11 @@ Diagnóstico de Lançamento. Página HTML/CSS/JS estática, sem framework.
 - JavaScript vanilla (sem React, sem Vue)
 - Fontes: Lora + Work Sans · Gloock para logo · IBM Plex Mono, self-hosted em
   `fonts/` e declaradas no `fonts.css` local (sem Google Fonts)
-- Ícones: Lucide (CDN)
+- Ícones: Lucide em **SVG inline** no HTML (desde 2026-09-30). Sem CDN nem biblioteca:
+  o `unpkg.com/lucide@latest` saiu (versão não fixa, 663 KB, e um pedido a terceiros sem
+  consentimento). Ícone novo → copiar o `<svg>` do lucide.dev (stroke 2, `currentColor`),
+  com a classe do componente e `aria-hidden="true" focusable="false"`. O `quiz.js` não
+  cria ícones; se passar a criar, vão como SVG na string do template.
 - Agendamento: Cal.com (`https://cal.com/celso-pereira/diagnostico`), aberto num
   separador novo pelo botão `#ctaMarcacao` do relatório, com `name` e `email`
   pré-preenchidos. Sem widget embebido.
@@ -40,6 +44,21 @@ Diagnóstico de Lançamento. Página HTML/CSS/JS estática, sem framework.
   o `index.html` tem `<link rel="canonical" href="https://celsopereira.pt/diagnostico/">`
   e o `privacidade.html` aponta para `https://celsopereira.pt/privacidade` (a página do
   site principal, de onde o texto é copiado). Página nova → canonical absoluto em celsopereira.pt.
+
+## Open Graph e SEO — REGRA
+> Desde 2026-09-30 (auditoria de SEO do site principal).
+
+- **Open Graph e Twitter no `index.html`:** `og:title` e `og:description` iguais ao `<title>`
+  e à meta description (se um mudar, muda o outro); `og:url` = canonical
+  (`https://celsopereira.pt/diagnostico/`); `og:image` = `https://celsopereira.pt/og.jpg`
+  (1200×630, do site principal); `og:locale pt_PT`, `og:site_name "Celso Pereira"`,
+  `og:type website`, `twitter:card summary_large_image`. URLs sempre absolutos em celsopereira.pt.
+- **Nunca `X-Robots-Tag`/`noindex` neste projecto** (nem por host): o `/diagnostico/` de
+  celsopereira.pt é um proxy desta página e o cabeçalho passava para lá. O canonical chega.
+- **`apple-touch-icon.png`** (180×180) é cópia do `public/apple-touch-icon.png` do site principal.
+- **FAQ sem `<dl>`:** os `<details>` vivem num `<div class="faq__list">`; a resposta é `<div>`.
+- **Barra de progresso do quiz:** `role="progressbar"` com `aria-label`; o `quiz.js`
+  (`setProgressValue`) actualiza `aria-valuenow` e `aria-valuetext`.
 
 ## Registo visual — ESCURO-QUENTE
 > Re-vestido em 2026-09-20: de claro-quente para escuro-quente, para condizer com o

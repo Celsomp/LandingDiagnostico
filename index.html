@@ -11,13 +11,27 @@
   <meta name="color-scheme" content="dark">
 
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+
+  <!-- Partilha em redes sociais. Título e descrição iguais ao <title> e à meta description;
+       a imagem é a do site principal (1200×630). URLs absolutos em celsopereira.pt. -->
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="pt_PT">
+  <meta property="og:site_name" content="Celso Pereira">
+  <meta property="og:title" content="Diagnóstico de Lançamento · Celso Pereira">
+  <meta property="og:description" content="Diagnóstico de Lançamento gratuito. 9 perguntas, 90 segundos. Descobre quanto deixas em cima da mesa em cada lançamento, e porquê.">
+  <meta property="og:url" content="https://celsopereira.pt/diagnostico/">
+  <meta property="og:image" content="https://celsopereira.pt/og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
 
   <!-- Fontes self-hosted (sem CDN) -->
   <link rel="preload" href="fonts/work-sans-400-700-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="fonts/lora-400-700i-latin.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="fonts.css">
 
-  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js" defer></script>
+  <!-- Ícones Lucide em SVG inline (sem CDN): nenhum pedido a terceiros sem consentimento. -->
 
   <link rel="stylesheet" href="styles.css">
 
@@ -95,7 +109,7 @@
 
         <article class="gap-card">
           <div class="gap-card__label">
-            <i data-lucide="flame" class="gap-card__icon"></i>
+            <svg class="gap-card__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3q1 4 4 6.5t3 5.5a1 1 0 0 1-14 0 5 5 0 0 1 1-3 1 1 0 0 0 5 0c0-2-1.5-3-1.5-5q0-2 2.5-4"/></svg>
             <span class="eyebrow">Aquecimento da lista</span>
           </div>
           <h3 class="gap-card__title">O lançamento vende-se antes de abrir o carrinho</h3>
@@ -108,7 +122,7 @@
 
         <article class="gap-card">
           <div class="gap-card__label">
-            <i data-lucide="mail" class="gap-card__icon"></i>
+            <svg class="gap-card__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m22 7-8.991 5.727a2 2 0 0 1-2.009 0L2 7"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
             <span class="eyebrow">Sequência de emails</span>
           </div>
           <h3 class="gap-card__title">A lista é o canal que lança por ti</h3>
@@ -121,7 +135,7 @@
 
         <article class="gap-card">
           <div class="gap-card__label">
-            <i data-lucide="trending-up" class="gap-card__icon"></i>
+            <svg class="gap-card__icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M16 7h6v6"/><path d="m22 7-8.5 8.5-5-5L2 17"/></svg>
             <span class="eyebrow">Sistema vs à mão</span>
           </div>
           <h3 class="gap-card__title">Montado à mão, cada lançamento é uma lotaria</h3>
@@ -153,7 +167,8 @@
       <div class="quiz__header">
         <p class="eyebrow quiz__eyebrow">Diagnóstico do teu lançamento</p>
         <p class="quiz__subtitle">9 perguntas · 90 segundos · Relatório personalizado no final</p>
-        <div class="quiz__progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100">
+        <div class="quiz__progress-track" id="quizProgressTrack" role="progressbar" aria-label="Progresso do diagnóstico"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
           <div class="quiz__progress-bar" id="quizProgress"></div>
         </div>
         <p class="quiz__progress-label" id="quizProgressLabel" aria-live="polite">Pergunta 1 de 9</p>
@@ -246,59 +261,59 @@
 
       <p class="eyebrow faq__eyebrow">Perguntas Frequentes</p>
 
-      <dl class="faq__list">
+      <div class="faq__list">
 
         <details class="faq__item" open data-faq-slug="gratuito">
           <summary class="faq__question">
             <span>Isto é gratuito? Qual é o catch?</span>
-            <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
+            <svg class="faq__chevron" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
           </summary>
-          <dd class="faq__answer">
+          <div class="faq__answer">
             <p>O diagnóstico é gratuito e a chamada também. O catch honesto: se o sistema fizer sentido para o teu negócio, vou propor trabalharmos juntos. Se não fizer sentido, não proponho. Não há lista de espera artificial nem pressão de tempo.</p>
-          </dd>
+          </div>
         </details>
 
         <details class="faq__item" data-faq-slug="spam">
           <summary class="faq__question">
             <span>Vou receber spam depois?</span>
-            <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
+            <svg class="faq__chevron" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
           </summary>
-          <dd class="faq__answer">
+          <div class="faq__answer">
             <p>Não. Vais receber o relatório por email e, se agendares chamada, um lembrete. Se não quiseres mais nada depois disso, basta dizer, ou cancelar directamente na lista. Sem drama.</p>
-          </dd>
+          </div>
         </details>
 
         <details class="faq__item" data-faq-slug="duracao-chamada">
           <summary class="faq__question">
             <span>Quanto tempo dura a chamada?</span>
-            <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
+            <svg class="faq__chevron" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
           </summary>
-          <dd class="faq__answer">
+          <div class="faq__answer">
             <p>30 minutos. Começo pela análise do teu caso específico, não por uma apresentação da minha oferta. Se houver fit, falo no final. Se não houver, também digo.</p>
-          </dd>
+          </div>
         </details>
 
         <details class="faq__item" data-faq-slug="automacao">
           <summary class="faq__question">
             <span>Já paguei por marketing ou lançamentos e não resultou. Em que é diferente?</span>
-            <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
+            <svg class="faq__chevron" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
           </summary>
-          <dd class="faq__answer">
+          <div class="faq__answer">
             <p>Na maioria dos casos que vi, não resultou porque quem fez vendeu tráfego ou peças soltas sem perceber o lançamento. O que faço é o inverso: começo pelo diagnóstico do teu último lançamento e monto à volta do que já vendes. E garanto a execução: entrego o lançamento montado no prazo, ou não pagas.</p>
-          </dd>
+          </div>
         </details>
 
         <details class="faq__item" data-faq-slug="tech">
           <summary class="faq__question">
             <span>Não domino IA nem a parte técnica. É demasiado complicado para mim?</span>
-            <i data-lucide="chevron-down" class="faq__chevron" aria-hidden="true"></i>
+            <svg class="faq__chevron" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="m6 9 6 6 6-6"/></svg>
           </summary>
-          <dd class="faq__answer">
+          <div class="faq__answer">
             <p>Não é para ti que é complicado, é para mim. O modelo é done-for-you: dás-me o essencial do teu lançamento, eu monto tudo com o sistema de IA, e tu apareces para criar e ensinar. Não tens de ser tu a fazê-lo. Mas vais perceber o que está a ser feito e porquê, explico-te tudo pelo caminho, porque só assim consegues julgar se o trabalho é bom.</p>
-          </dd>
+          </div>
         </details>
 
-      </dl>
+      </div>
 
     </div>
   </section>
@@ -347,10 +362,5 @@
   <script src="pixel.js" defer></script>
   <script src="quiz.js" defer></script>
   <script src="tracking.js" defer></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      if (window.lucide) lucide.createIcons();
-    });
-  </script>
 </body>
 </html>

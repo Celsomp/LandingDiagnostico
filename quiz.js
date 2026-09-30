@@ -190,11 +190,22 @@ function showStep(index) {
   updateProgress(index + 1);
 }
 
+// A barra (role="progressbar") diz o valor ao leitor de ecrã; o texto por baixo diz a pergunta.
+function setProgressValue(pct, texto) {
+  const track = document.getElementById('quizProgressTrack');
+  if (!track) return;
+  track.setAttribute('aria-valuenow', String(Math.round(pct)));
+  track.setAttribute('aria-valuetext', texto);
+}
+
 function updateProgress(current) {
   const bar   = document.getElementById('quizProgress');
   const label = document.getElementById('quizProgressLabel');
-  if (bar)   bar.style.width = ((current / TOTAL) * 100) + '%';
-  if (label) label.textContent = `Pergunta ${current} de ${TOTAL}`;
+  const pct   = (current / TOTAL) * 100;
+  const texto = `Pergunta ${current} de ${TOTAL}`;
+  if (bar)   bar.style.width = pct + '%';
+  if (label) label.textContent = texto;
+  setProgressValue(pct, texto);
 }
 
 function showGate() {
@@ -204,6 +215,7 @@ function showGate() {
   const label = document.getElementById('quizProgressLabel');
   if (bar)   bar.style.width = '100%';
   if (label) label.textContent = 'Quase lá!';
+  setProgressValue(100, 'Quase lá!');
 
   const gate = document.getElementById('quizGate');
   if (!gate) return;
@@ -287,7 +299,6 @@ async function handleGateSubmit(e) {
 
   setTimeout(() => {
     reportSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    if (typeof lucide !== 'undefined') lucide.createIcons();
     initReportAnimations(result.score, result.gapLancamento, email);
   }, 800);
 }
