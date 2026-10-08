@@ -3,7 +3,7 @@
 // A chave secreta só existe aqui. O browser nunca fala com o Supabase.
 //
 // POST /api/mapa, JSON:
-//   { nome, empresa, email, consentimento: true, pessoas, tarefas: [3 ids], tarefa_outra?,
+//   { nome, empresa, papel?, email, consentimento: true, pessoas, tarefas: [3 ids], tarefa_outra?,
 //     horas: { id: intervalo }, custo_hora, nivel_ia, preocupacao, motivo? }
 // Os totais NÃO vêm do browser: são recalculados aqui (mesma conta do src/scripts/mapa-calculo.ts
 // do site — se mudar lá, muda aqui).
@@ -14,7 +14,10 @@
 const MAX_BYTES = 10 * 1024;
 
 const PESSOAS = ['1_3', '4_8', '9_15', 'mais_15'];
-const TAREFAS = ['relatorios', 'folhas_calculo', 'emails', 'propostas', 'atas', 'introducao_dados', 'atendimento', 'outra'];
+const TAREFAS = ['relatorios', 'folhas_calculo', 'emails', 'propostas', 'atas', 'introducao_dados', 'atendimento', 'chamadas', 'outra'];
+// O site obriga o papel. Aqui é opcional (grava null), para nenhum mapa se perder enquanto
+// o site e esta API não estão publicados ao mesmo tempo. Valores fora da lista são recusados.
+const PAPEL = ['dono', 'chefia', 'equipa'];
 const HORAS_SEMANA = { '1_2': 1.5, '2_5': 3.5, '5_10': 7.5, mais_10: 10 };
 const CUSTO_HORA = { menos_10: 8, '10_15': 12.5, '15_20': 17.5, mais_20: 22 };
 const NIVEL_IA = ['ninguem', 'so_eu', 'algumas', 'todos'];
@@ -27,6 +30,7 @@ const NOMES = {
   atas: 'Atas e resumos de reuniões',
   introducao_dados: 'Introdução de dados em software',
   atendimento: 'Atendimento e marcações',
+  chamadas: 'Chamadas e seguimento de contactos',
 };
 // O texto exacto da caixa, guardado com cada mapa como prova do consentimento.
 const TEXTO_CONSENTIMENTO =
@@ -47,6 +51,10 @@ function validar(b) {
   const email = typeof b.email === 'string' && b.email.trim().length <= 254 && EMAIL_RE.test(b.email.trim()) ? b.email.trim() : null;
   if (!nome || !empresa || !email) return null;
 
+  const semPapel = b.papel === undefined || b.papel === null || b.papel === '';
+  if (!semPapel && !PAPEL.includes(b.papel)) return null;
+  const papel = semPapel ? null : b.papel;
+
   if (!PESSOAS.includes(b.pessoas)) return null;
   if (!Array.isArray(b.tarefas) || b.tarefas.length !== 3 || new Set(b.tarefas).size !== 3) return null;
   if (!b.tarefas.every((t) => TAREFAS.includes(t))) return null;
@@ -63,7 +71,7 @@ function validar(b) {
   const motivo = opcional(b.motivo, 300);
   if (motivo === null) return null;
 
-  return { ...b, nome, empresa, email, tarefaOutra, motivo: motivo || null };
+  return { ...b, nome, empresa, papel, email, tarefaOutra, motivo: motivo || null };
 }
 
 const dezenas = (n) => Math.round(n / 10) * 10;
@@ -165,6 +173,7 @@ export default async function handler(req, res) {
       lead_id: leadId,
       nome: v.nome,
       empresa: v.empresa,
+      papel: v.papel,
       email: v.email,
       consentimento: true,
       consentimento_texto: TEXTO_CONSENTIMENTO,
