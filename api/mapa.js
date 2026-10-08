@@ -30,7 +30,7 @@ const NOMES = {
 };
 // O texto exacto da caixa, guardado com cada mapa como prova do consentimento.
 const TEXTO_CONSENTIMENTO =
-  'Aceito que o Celso Pereira guarde estes dados para me enviar o mapa e me contactar sobre ele.';
+  'Aceito que o Celso Pereira guarde estes dados para me mostrar o mapa e me contactar sobre ele.';
 
 const EMAIL_RE = /^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
 
