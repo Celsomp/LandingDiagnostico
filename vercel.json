@@ -5,13 +5,13 @@
     {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "gestoria.pt" }],
-      "destination": "https://celsopereira.pt/diagnostico/",
+      "destination": "https://celsopereira.pt/mapa",
       "permanent": true
     },
     {
       "source": "/(.*)",
       "has": [{ "type": "host", "value": "www.gestoria.pt" }],
-      "destination": "https://celsopereira.pt/diagnostico/",
+      "destination": "https://celsopereira.pt/mapa",
       "permanent": true
     }
   ],

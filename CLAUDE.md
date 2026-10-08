@@ -113,6 +113,16 @@ Regras:
 - **`privacidade.html`** é cópia do texto da `/privacidade` do site principal (`conteudo.md`).
   Se o texto lá mudar, muda aqui também.
 
+## Mapa de automação (celsopereira.pt/mapa) — desde 2026-10-08
+- O `/diagnostico` deixou de ser servido em celsopereira.pt: redirecciona para `/mapa`, que é
+  página do site principal (Astro). Este projecto só fornece o servidor: `api/mapa.js`, chamado
+  por rewrite `celsopereira.pt/api/mapa` → `/api/mapa`.
+- `api/mapa.js` grava em `public.mapas` (projecto Supabase Claude) e, se o email for novo, cria a
+  lead em `public.leads` com `origem = 'mapa'`. Sem `consentimento: true`, recusa. Os totais são
+  recalculados aqui: a conta tem de bater com `src/scripts/mapa-calculo.ts` do site.
+- O mapa **não** vai para o systeme.io (o consentimento não cobre listas de email).
+- `gestoria.pt` redirecciona agora para `https://celsopereira.pt/mapa`.
+
 ## Leads — REGRA
 > Desde 2026-09-28. As leads vão para `public.leads` do projecto Supabase **Claude**,
 > sempre pelo servidor.
