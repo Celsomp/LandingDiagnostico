@@ -35,7 +35,7 @@ Diagnóstico de Lançamento. Página HTML/CSS/JS estática, sem framework.
 - **A casa da página é `https://celsopereira.pt/diagnostico/`.** O site principal serve-a
   por proxy a partir de `landing-diagnostico-two.vercel.app`.
 - **`gestoria.pt` e `www.gestoria.pt` redireccionam (308)** para
-  `https://celsopereira.pt/diagnostico/`, qualquer que seja o caminho (inclui `/api/*`).
+  `https://celsopereira.pt/mapa`, qualquer que seja o caminho (inclui `/api/*`).
   Está no `vercel.json` (`redirects` com `has` `type: "host"`). O redirect só depende do
   host, por isso não toca nos pedidos que chegam por `landing-diagnostico-two.vercel.app`.
   **Nunca** trocar para um redirect sem `has`: partia o `/diagnostico/` do site principal.

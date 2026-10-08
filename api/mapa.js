@@ -56,8 +56,8 @@ function validar(b) {
   if (temOutra && !tarefaOutra) return null;
 
   if (!b.horas || typeof b.horas !== 'object' || Array.isArray(b.horas)) return null;
-  if (!b.tarefas.every((t) => Object.hasOwn(HORAS_SEMANA, b.horas[t]))) return null;
-  if (!Object.hasOwn(CUSTO_HORA, b.custo_hora)) return null;
+  if (!b.tarefas.every((t) => typeof b.horas[t] === 'string' && Object.hasOwn(HORAS_SEMANA, b.horas[t]))) return null;
+  if (!(typeof b.custo_hora === 'string' && Object.hasOwn(CUSTO_HORA, b.custo_hora))) return null;
   if (!NIVEL_IA.includes(b.nivel_ia) || !PREOCUPACAO.includes(b.preocupacao)) return null;
 
   const motivo = opcional(b.motivo, 300);
