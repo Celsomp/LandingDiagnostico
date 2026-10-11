@@ -4,11 +4,15 @@
 //
 // POST /api/mapa, JSON:
 //   { nome, empresa, papel?, email, consentimento: true, pessoas, tarefas: [3 ids], tarefa_outra?,
-//     horas: { id: intervalo }, custo_hora, nivel_ia, preocupacao, motivo? }
+//     horas: { id: intervalo }, custo_hora, nivel_ia, preocupacao, motivo }
+// O motivo é obrigatório: 15 a 400 caracteres depois do trim, contados como o char_length do
+// CHECK mapas_motivo_valido. Grava-se tal como veio (só trim).
+// A validação corre toda antes de qualquer escrita: um pedido recusado não grava nada.
 // Os totais NÃO vêm do browser: são recalculados aqui (mesma conta do src/scripts/mapa-calculo.ts
 // do site — se mudar lá, muda aqui).
 // Também cria a lead em public.leads (origem "mapa") se o email ainda não existir, para a ficha
-// chegar ao Notion. Uma lead que já existia não é alterada; o mapa fica ligado a ela.
+// chegar ao Notion, com o motivo no fim do resumo ("Nas palavras dele: «…»"). Uma lead que já
+// existia não é alterada (o motivo fica só em mapas); o mapa fica ligado a ela.
 // Responde só { ok: true } ou { ok: false }. Sem consentimento, não grava nada.
 
 const MAX_BYTES = 10 * 1024;
@@ -40,7 +44,17 @@ const EMAIL_RE = /^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{
 
 const falhar = (res, status) => res.status(status).json({ ok: false });
 const texto = (v, max) => (typeof v === 'string' && v.trim().length > 0 && v.trim().length <= max ? v.trim() : null);
-const opcional = (v, max) => (v === undefined || v === null || v === '' ? '' : texto(v, max));
+// Pontos de código, como o char_length do Postgres. Recusa \0 e surrogates soltos, que o Postgres
+// não grava: o insert em mapas falharia depois de a lead já estar criada.
+const MOTIVO_MIN = 15;
+const MOTIVO_MAX = 400;
+function motivoValido(v) {
+  if (typeof v !== 'string') return null;
+  const t = v.trim();
+  const n = [...t].length;
+  if (n < MOTIVO_MIN || n > MOTIVO_MAX || t.includes('\0') || !t.isWellFormed()) return null;
+  return t;
+}
 
 function validar(b) {
   if (!b || typeof b !== 'object' || Array.isArray(b)) return null;
@@ -68,10 +82,10 @@ function validar(b) {
   if (!(typeof b.custo_hora === 'string' && Object.hasOwn(CUSTO_HORA, b.custo_hora))) return null;
   if (!NIVEL_IA.includes(b.nivel_ia) || !PREOCUPACAO.includes(b.preocupacao)) return null;
 
-  const motivo = opcional(b.motivo, 300);
-  if (motivo === null) return null;
+  const motivo = motivoValido(b.motivo);
+  if (!motivo) return null;
 
-  return { ...b, nome, empresa, papel, email, tarefaOutra, motivo: motivo || null };
+  return { ...b, nome, empresa, papel, email, tarefaOutra, motivo };
 }
 
 const dezenas = (n) => Math.round(n / 10) * 10;
@@ -165,7 +179,8 @@ export default async function handler(req, res) {
   const nomeTarefa = (id) => (id === 'outra' ? v.tarefaOutra : NOMES[id]);
   const resumo =
     `Mapa de automação · ${v.empresa} · ${euros(totais.total_custo_ano)} €/ano · ` +
-    `maior perda: ${nomeTarefa(totais.maior_perda)}`;
+    `maior perda: ${nomeTarefa(totais.maior_perda)}\n` +
+    `Nas palavras dele: «${v.motivo}»`;
 
   try {
     const leadId = await garantirLead(url, chave, v, resumo.slice(0, 1000));
