@@ -4,7 +4,11 @@
 //
 // POST /api/mapa, JSON:
 //   { nome, empresa, papel?, email, consentimento: true, pessoas, tarefas: [3 ids], tarefa_outra?,
-//     horas: { id: intervalo }, custo_hora, nivel_ia, preocupacao, motivo }
+//     horas: { id: intervalo }, custo_hora, nivel_ia, preocupacao, motivo,
+//     utm_source?, utm_medium?, utm_campaign?, utm_content?, fbclid? }
+// Os parâmetros do link (origem da visita) são opcionais e nunca dão 400: vazio, com mais de 150
+// caracteres, com \0 ou com caracteres partidos → null, e o mapa segue. Só vão para mapas.
+// O fbclid só pode ir para a Meta (Conversions API) para quem aceitou os cookies de marketing.
 // O motivo é obrigatório: 15 a 400 caracteres depois do trim, contados como o char_length do
 // CHECK mapas_motivo_valido. Grava-se tal como veio (só trim).
 // A validação corre toda antes de qualquer escrita: um pedido recusado não grava nada.
@@ -15,7 +19,10 @@
 // leads-para-notion) e no fim do resumo ("Frase do Mapa: «…»"). Tem de ir na própria lead: o
 // gatilho dispara antes de a linha em mapas existir. Uma lead que já existia não é alterada
 // (o motivo fica só em mapas); o mapa fica ligado a ela.
-// Responde só { ok: true } ou { ok: false }. Sem consentimento, não grava nada.
+// id? é o id do mapa, gerado pelo site uma vez por envio. Se faltar ou não for um UUID, é gerado
+// aqui. A gravação é idempotente pelo id: repetir o mesmo envio dá 200 e uma só linha em mapas.
+// Responde { ok: true, id } (o site usa-o como eventID do Lead do Meta Pixel) ou { ok: false }.
+// Sem consentimento, não grava nada.
 
 const MAX_BYTES = 10 * 1024;
 
@@ -43,6 +50,7 @@ const TEXTO_CONSENTIMENTO =
   'Aceito que o Celso Pereira guarde estes dados para me mostrar o mapa, me contactar sobre ele e, de forma anónima, melhorar o serviço.';
 
 const EMAIL_RE = /^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const falhar = (res, status) => res.status(status).json({ ok: false });
 const texto = (v, max) => (typeof v === 'string' && v.trim().length > 0 && v.trim().length <= max ? v.trim() : null);
@@ -55,6 +63,15 @@ function motivoValido(v) {
   const t = v.trim();
   const n = [...t].length;
   if (n < MOTIVO_MIN || n > MOTIVO_MAX || t.includes('\0') || !t.isWellFormed()) return null;
+  return t;
+}
+
+const PARAMETROS_LINK = ['utm_source', 'utm_medium', 'utm_campaign', 'utm_content', 'fbclid'];
+function parametroLink(v) {
+  if (typeof v !== 'string') return null;
+  const t = v.trim();
+  const n = [...t].length;
+  if (n === 0 || n > 150 || t.includes('\0') || !t.isWellFormed()) return null;
   return t;
 }
 
@@ -87,7 +104,9 @@ function validar(b) {
   const motivo = motivoValido(b.motivo);
   if (!motivo) return null;
 
-  return { ...b, nome, empresa, papel, email, tarefaOutra, motivo };
+  const link = Object.fromEntries(PARAMETROS_LINK.map((p) => [p, parametroLink(b[p])]));
+
+  return { ...b, nome, empresa, papel, email, tarefaOutra, motivo, link };
 }
 
 const dezenas = (n) => Math.round(n / 10) * 10;
@@ -140,10 +159,11 @@ async function garantirLead(url, chave, { nome, email, motivo }, resumo) {
   return linha.id;
 }
 
+/** Idempotente pelo id: um mapa com um id que já existe é ignorado (a 2.ª tentativa do site). */
 async function inserirMapa(url, chave, mapa) {
-  const res = await fetch(`${url}/rest/v1/mapas`, {
+  const res = await fetch(`${url}/rest/v1/mapas?on_conflict=id`, {
     method: 'POST',
-    headers: { ...cabecalhos(chave), Prefer: 'return=minimal' },
+    headers: { ...cabecalhos(chave), Prefer: 'resolution=ignore-duplicates,return=minimal' },
     body: JSON.stringify(mapa),
   });
   if (!res.ok) throw new Error('mapa: ' + res.status + ' ' + (await res.text()));
@@ -184,9 +204,13 @@ export default async function handler(req, res) {
     `maior perda: ${nomeTarefa(totais.maior_perda)}\n` +
     `Frase do Mapa: «${v.motivo}»`;
 
+  // O id vem do site, igual nas duas tentativas do mesmo envio: assim a 2.ª não duplica o mapa.
+  const id = typeof body.id === 'string' && UUID_RE.test(body.id) ? body.id.toLowerCase() : crypto.randomUUID();
+
   try {
     const leadId = await garantirLead(url, chave, v, resumo.slice(0, 1000));
     await inserirMapa(url, chave, {
+      id,
       lead_id: leadId,
       nome: v.nome,
       empresa: v.empresa,
@@ -206,9 +230,10 @@ export default async function handler(req, res) {
       nivel_ia: v.nivel_ia,
       preocupacao: v.preocupacao,
       motivo: v.motivo,
+      ...v.link,
       ...totais,
     });
-    return res.status(200).json({ ok: true });
+    return res.status(200).json({ ok: true, id });
   } catch (err) {
     console.error('[mapa] erro:', err.message);
     return falhar(res, 502);
