@@ -11,8 +11,10 @@
 // Os totais NÃO vêm do browser: são recalculados aqui (mesma conta do src/scripts/mapa-calculo.ts
 // do site — se mudar lá, muda aqui).
 // Também cria a lead em public.leads (origem "mapa") se o email ainda não existir, para a ficha
-// chegar ao Notion, com o motivo no fim do resumo ("Nas palavras dele: «…»"). Uma lead que já
-// existia não é alterada (o motivo fica só em mapas); o mapa fica ligado a ela.
+// chegar ao Notion. O motivo vai em respostas.motivo (propriedade "Frase do Mapa", pela função
+// leads-para-notion) e no fim do resumo ("Frase do Mapa: «…»"). Tem de ir na própria lead: o
+// gatilho dispara antes de a linha em mapas existir. Uma lead que já existia não é alterada
+// (o motivo fica só em mapas); o mapa fica ligado a ela.
 // Responde só { ok: true } ou { ok: false }. Sem consentimento, não grava nada.
 
 const MAX_BYTES = 10 * 1024;
@@ -124,13 +126,13 @@ async function procurarLead(url, chave, email) {
 }
 
 /** Devolve o id da lead (nova ou já existente). Uma lead existente não é alterada. */
-async function garantirLead(url, chave, { nome, email }, resumo) {
+async function garantirLead(url, chave, { nome, email, motivo }, resumo) {
   const existente = await procurarLead(url, chave, email);
   if (existente) return existente;
   const res = await fetch(`${url}/rest/v1/leads?select=id`, {
     method: 'POST',
     headers: { ...cabecalhos(chave), Prefer: 'return=representation' },
-    body: JSON.stringify({ origem: 'mapa', nome, email, resumo }),
+    body: JSON.stringify({ origem: 'mapa', nome, email, resumo, respostas: { motivo } }),
   });
   if (res.status === 409) return procurarLead(url, chave, email); // corrida com outro pedido
   if (!res.ok) throw new Error('lead: ' + res.status + ' ' + (await res.text()));
@@ -180,7 +182,7 @@ export default async function handler(req, res) {
   const resumo =
     `Mapa de automação · ${v.empresa} · ${euros(totais.total_custo_ano)} €/ano · ` +
     `maior perda: ${nomeTarefa(totais.maior_perda)}\n` +
-    `Nas palavras dele: «${v.motivo}»`;
+    `Frase do Mapa: «${v.motivo}»`;
 
   try {
     const leadId = await garantirLead(url, chave, v, resumo.slice(0, 1000));
