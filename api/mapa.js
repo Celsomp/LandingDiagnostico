@@ -23,6 +23,15 @@
 // aqui. A gravação é idempotente pelo id: repetir o mesmo envio dá 200 e uma só linha em mapas.
 // Responde { ok: true, id } (o site usa-o como eventID do Lead do Meta Pixel) ou { ok: false }.
 // Sem consentimento, não grava nada.
+//
+// PATCH /api/mapa, JSON: { id, email, telefone, consentimento: true }
+// Junta o telemóvel (opcional, pedido depois do resultado) ao mapa acabado de gravar. Só actualiza
+// mapas.telefone e mapas.telefone_consentimento_em, e só na linha com esse id E esse email, ainda
+// sem telefone e criada há menos de 1 hora. Nunca cria linhas, nunca mexe em leads (o número não
+// vai para o Notion) e nada aqui contacta a pessoa. Repetir o mesmo número dá 200.
+// O número é normalizado para E.164: 9 dígitos a começar por 9, com ou sem +351, → +351…;
+// internacional só com '+'. Igual ao CHECK mapas_telefone_e164 e ao src/scripts/mapa.ts do site.
+// Responde { ok: true } ou { ok: false } (404 se não houver mapa que corresponda).
 
 const MAX_BYTES = 10 * 1024;
 
@@ -73,6 +82,29 @@ function parametroLink(v) {
   const n = [...t].length;
   if (n === 0 || n > 150 || t.includes('\0') || !t.isWellFormed()) return null;
   return t;
+}
+
+// Coluna de criação de public.mapas, para a janela de 1 hora do PATCH.
+const COLUNA_CRIADO = 'criado_em';
+const JANELA_TELEFONE_MS = 60 * 60 * 1000;
+const E164_RE = /^\+[1-9][0-9]{7,14}$/;
+
+function normalizarTelefone(v) {
+  if (typeof v !== 'string' || v.length > 40) return null;
+  const n = v.replace(/[\s.-]/g, '');
+  if (/^9[0-9]{8}$/.test(n)) return '+351' + n;
+  if (n.startsWith('+351')) return /^\+3519[0-9]{8}$/.test(n) ? n : null;
+  return E164_RE.test(n) ? n : null;
+}
+
+function validarTelefone(b) {
+  if (!b || typeof b !== 'object' || Array.isArray(b)) return null;
+  if (b.consentimento !== true) return null;
+  if (typeof b.id !== 'string' || !UUID_RE.test(b.id)) return null;
+  const email = typeof b.email === 'string' && b.email.trim().length <= 254 && EMAIL_RE.test(b.email.trim()) ? b.email.trim() : null;
+  const telefone = normalizarTelefone(b.telefone);
+  if (!email || !telefone) return null;
+  return { id: b.id.toLowerCase(), email, telefone };
 }
 
 function validar(b) {
@@ -169,11 +201,36 @@ async function inserirMapa(url, chave, mapa) {
   if (!res.ok) throw new Error('mapa: ' + res.status + ' ' + (await res.text()));
 }
 
+/**
+ * Devolve true se o mapa ficou com este telefone: gravado agora, ou já gravado antes com o mesmo
+ * número (o site repetiu o pedido). Um mapa de outro email, antigo ou com outro número fica igual.
+ */
+async function juntarTelefone(url, chave, { id, email, telefone }) {
+  const filtro = `id=eq.${encodeURIComponent(id)}&email=eq.${encodeURIComponent(email)}`;
+  const desde = new Date(Date.now() - JANELA_TELEFONE_MS).toISOString();
+  const res = await fetch(
+    `${url}/rest/v1/mapas?${filtro}&telefone=is.null&${COLUNA_CRIADO}=gte.${encodeURIComponent(desde)}&select=id`,
+    {
+      method: 'PATCH',
+      headers: { ...cabecalhos(chave), Prefer: 'return=representation' },
+      body: JSON.stringify({ telefone, telefone_consentimento_em: new Date().toISOString() }),
+    },
+  );
+  if (!res.ok) throw new Error('telefone: ' + res.status + ' ' + (await res.text()));
+  if ((await res.json()).length > 0) return true;
+
+  const igual = await fetch(`${url}/rest/v1/mapas?${filtro}&telefone=eq.${encodeURIComponent(telefone)}&select=id&limit=1`, {
+    headers: cabecalhos(chave),
+  });
+  if (!igual.ok) throw new Error('telefone: ' + igual.status + ' ' + (await igual.text()));
+  return (await igual.json()).length > 0;
+}
+
 // ── Handler ──────────────────────────────────────────────────
 
 export default async function handler(req, res) {
-  if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+  if (req.method !== 'POST' && req.method !== 'PATCH') {
+    res.setHeader('Allow', 'POST, PATCH');
     return falhar(res, 405);
   }
   if (!String(req.headers['content-type'] || '').toLowerCase().startsWith('application/json')) return falhar(res, 415);
@@ -187,7 +244,7 @@ export default async function handler(req, res) {
   }
   if (body && Buffer.byteLength(JSON.stringify(body)) > MAX_BYTES) return falhar(res, 413);
 
-  const v = validar(body);
+  const v = req.method === 'PATCH' ? validarTelefone(body) : validar(body);
   if (!v) return falhar(res, 400);
 
   const url = process.env.LEADS_SUPABASE_URL;
@@ -195,6 +252,15 @@ export default async function handler(req, res) {
   if (!url || !chave) {
     console.error('[mapa] faltam LEADS_SUPABASE_URL / LEADS_SUPABASE_SECRET');
     return falhar(res, 500);
+  }
+
+  if (req.method === 'PATCH') {
+    try {
+      return (await juntarTelefone(url, chave, v)) ? res.status(200).json({ ok: true }) : falhar(res, 404);
+    } catch (err) {
+      console.error('[mapa] erro ao juntar telefone:', err.message);
+      return falhar(res, 502);
+    }
   }
 
   const totais = calcular(v.tarefas, v.horas, v.custo_hora);
