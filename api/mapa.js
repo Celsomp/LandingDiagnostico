@@ -30,9 +30,9 @@
 //
 // systeme.io: depois de o mapa ficar gravado, cria ou actualiza o contacto pelo email, com os
 // campos do mapa, e põe as tags Mapa_Lead e Lista_Celso (mais Emails_Sim com a caixa opcional).
-// Se correr bem, grava mapas.systeme_sincronizado_em. Tem um prazo curto (SYSTEME_PRAZO_MS) e
-// nunca muda a resposta: uma falha fica só nos logs. Nunca cria tags: os ids vêm das variáveis
-// SYSTEMEIO_TAG_*, ou do nome exacto na lista de tags da conta.
+// Se correr bem, grava mapas.systeme_sincronizado_em. Corre DEPOIS da resposta ao browser
+// (waitUntil, @vercel/functions): nunca a atrasa nem a muda; uma falha fica só nos logs. Nunca cria
+// tags: os ids vêm das variáveis SYSTEMEIO_TAG_*, ou do nome exacto na lista de tags da conta.
 //
 // PATCH /api/mapa, JSON: { id, email, telefone, consentimento: true }
 // Junta o telemóvel (opcional, pedido depois do resultado) ao mapa acabado de gravar. Só actualiza
@@ -42,9 +42,11 @@
 // O número é normalizado para E.164: 9 dígitos a começar por 9, com ou sem +351, → +351…;
 // internacional só com '+'. Igual ao CHECK mapas_telefone_e164 e ao src/scripts/mapa.ts do site.
 // Responde { ok: true } ou { ok: false } (404 se não houver mapa que corresponda).
-// Depois do UPDATE, se o mapa foi sincronizado com o systeme.io, escreve o número no campo
-// telefone do contacto, se ele existir (nunca o cria). Mesma regra do POST: uma falha não muda a
-// resposta.
+// Depois do UPDATE e da resposta (waitUntil), escreve o número no phone_number do contacto, se o
+// mapa não for do site antigo. Nunca cria o contacto: se ainda não existir (a sincronização do POST
+// a correr), espera e tenta outra vez. Uma falha fica só nos logs.
+
+import { waitUntil } from '@vercel/functions';
 
 const MAX_BYTES = 10 * 1024;
 
@@ -227,13 +229,13 @@ async function inserirMapa(url, chave, mapa) {
 }
 
 /**
- * Devolve a linha do mapa ({ id, systeme_sincronizado_em }) se ficou com este telefone: gravado
+ * Devolve a linha do mapa ({ id, consentimento_texto }) se ficou com este telefone: gravado
  * agora, ou já gravado antes com o mesmo número (o site repetiu o pedido). Devolve null se não
  * houver mapa que corresponda: um mapa de outro email, antigo ou com outro número fica igual.
  */
 async function juntarTelefone(url, chave, { id, email, telefone }) {
   const filtro = `id=eq.${encodeURIComponent(id)}&email=eq.${encodeURIComponent(email)}`;
-  const campos = 'select=id,systeme_sincronizado_em';
+  const campos = 'select=id,consentimento_texto';
   const desde = new Date(Date.now() - JANELA_TELEFONE_MS).toISOString();
   const res = await fetch(
     `${url}/rest/v1/mapas?${filtro}&telefone=is.null&${COLUNA_CRIADO}=gte.${encodeURIComponent(desde)}&${campos}`,
@@ -268,11 +270,17 @@ async function marcarSincronizado(url, chave, id) {
 
 // ── systeme.io ───────────────────────────────────────────────
 // API pública: chave em X-API-Key; PATCH com application/merge-patch+json; campos por slug.
-// O site corta o pedido aos 6 s: o Supabase mais estes prazos têm de caber lá dentro.
+// Corre depois da resposta ao browser (waitUntil): a pessoa nunca espera pelo systeme.io.
+// Cada tentativa tem SYSTEME_PRAZO_MS. Uma falha de rede, um prazo esgotado, um 408/429 ou um 5xx
+// têm uma 2.ª tentativa; um 4xx não (não muda à segunda). Cada pedido fica nos logs: passo,
+// método, caminho (sem o email), status e ms; num prazo esgotado, também o que estava em curso.
 
 const SYSTEME = 'https://api.systeme.io/api';
-const SYSTEME_PRAZO_MS = 2000; // para toda a sincronização de um pedido
-const SUPABASE_MARCA_PRAZO_MS = 1000;
+const SYSTEME_PRAZO_MS = 8000; // por tentativa
+const SYSTEME_PAUSA_MS = 500; // antes da 2.ª tentativa
+// O PATCH do telefone pode chegar antes de a sincronização do POST acabar: sem contacto, espera.
+const SYSTEME_PAUSA_SEM_CONTACTO_MS = 5000;
+const SUPABASE_MARCA_PRAZO_MS = 3000;
 
 // Slugs dos campos do contacto. first_name, company_name e phone_number são campos nativos do
 // systeme.io; os outros foram criados na conta pelo Celso (2026-10-17).
@@ -299,27 +307,59 @@ const TAG_VARIAVEL = {
   Emails_Sim: 'SYSTEMEIO_TAG_EMAILS_SIM',
 };
 
-function systeme(chave, caminho, sinal, { method = 'GET', body, merge = false } = {}) {
-  const headers = { 'X-API-Key': chave };
+/** Resposta do systeme.io que não é 2xx (ou uma tag que não existe). Só se repete se for passageira. */
+class ErroSysteme extends Error {
+  constructor(passo, status, detalhe, { repetir = status === 408 || status === 429 || status >= 500, pausa } = {}) {
+    super(`${passo}: ${status} ${detalhe}`.slice(0, 600));
+    this.repetir = repetir;
+    this.pausa = pausa;
+  }
+}
+const repetivel = (err) => !(err instanceof ErroSysteme) || err.repetir;
+const pausa = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// O email não vai para os logs: a procura fica com o valor tapado.
+const caminhoNosLogs = (caminho) => caminho.replace(/email=[^&]*/, 'email=…');
+
+/** Um pedido ao systeme.io, registado em ctx.reg. ctx = { chave, sinal, reg }. */
+async function systeme(ctx, passo, caminho, { method = 'GET', body, merge = false } = {}) {
+  const headers = { 'X-API-Key': ctx.chave };
   if (body) headers['Content-Type'] = merge ? 'application/merge-patch+json' : 'application/json';
-  return fetch(SYSTEME + caminho, { method, headers, body: body && JSON.stringify(body), signal: sinal });
+  const marca = Symbol();
+  const inicio = Date.now();
+  const linha = `${passo} ${method} ${caminhoNosLogs(caminho)}`;
+  ctx.reg.emCurso.set(marca, { linha, inicio });
+  try {
+    const res = await fetch(SYSTEME + caminho, { method, headers, body: body && JSON.stringify(body), signal: ctx.sinal });
+    ctx.reg.linhas.push(`${linha} ${res.status} ${Date.now() - inicio}ms`);
+    return res;
+  } catch (err) {
+    ctx.reg.linhas.push(`${linha} ✗ ${err.name} ${Date.now() - inicio}ms`);
+    throw err;
+  } finally {
+    ctx.reg.emCurso.delete(marca);
+  }
 }
 
-async function procurarContacto(chave, email, sinal) {
-  const res = await systeme(chave, `/contacts?email=${encodeURIComponent(email)}`, sinal);
-  if (!res.ok) throw new Error('systeme procurar: ' + res.status + ' ' + (await res.text()));
+async function falhou(passo, res) {
+  return new ErroSysteme(passo, res.status, await res.text().catch(() => ''));
+}
+
+async function procurarContacto(ctx, email) {
+  const res = await systeme(ctx, 'procurar', `/contacts?email=${encodeURIComponent(email)}`);
+  if (!res.ok) throw await falhou('procurar', res);
   const { items } = await res.json();
   return items?.[0] ?? null;
 }
 
-async function actualizarContacto(chave, id, fields, sinal) {
-  const res = await systeme(chave, `/contacts/${id}`, sinal, { method: 'PATCH', body: { fields }, merge: true });
-  if (!res.ok) throw new Error('systeme actualizar: ' + res.status + ' ' + (await res.text()));
+async function actualizarContacto(ctx, id, fields) {
+  const res = await systeme(ctx, 'actualizar', `/contacts/${id}`, { method: 'PATCH', body: { fields }, merge: true });
+  if (!res.ok) throw await falhou('actualizar', res);
   return res.json();
 }
 
 /** Ids das tags pelas variáveis SYSTEMEIO_TAG_*; as que faltarem, pelo nome exacto. Nunca cria tags. */
-async function idsDasTags(chave, nomes, sinal) {
+async function idsDasTags(ctx, nomes) {
   const ids = {};
   const faltam = [];
   for (const nome of nomes) {
@@ -328,12 +368,12 @@ async function idsDasTags(chave, nomes, sinal) {
     else faltam.push(nome);
   }
   if (faltam.length === 0) return ids;
-  const res = await systeme(chave, '/tags?limit=100', sinal);
-  if (!res.ok) throw new Error('systeme tags: ' + res.status + ' ' + (await res.text()));
+  const res = await systeme(ctx, 'tags', '/tags?limit=100');
+  if (!res.ok) throw await falhou('tags', res);
   const { items = [] } = await res.json();
   for (const nome of faltam) {
     const tag = items.find((t) => t.name === nome);
-    if (!tag) throw new Error('systeme: a tag ' + nome + ' não existe na conta');
+    if (!tag) throw new ErroSysteme('tags', 'em falta', `a tag ${nome} não existe na conta`, { repetir: false });
     ids[nome] = tag.id;
   }
   return ids;
@@ -359,47 +399,96 @@ function camposDoMapa(v, totais, id) {
 }
 
 /** Cria ou actualiza o contacto e põe-lhe as tags que ainda não tem. Lança erro se algo falhar. */
-async function sincronizarMapa(chave, v, totais, id) {
-  const sinal = AbortSignal.timeout(SYSTEME_PRAZO_MS);
+async function sincronizarMapa(ctx, v, totais, id) {
   const fields = camposDoMapa(v, totais, id);
   const nomes = ['Mapa_Lead', 'Lista_Celso', ...(v.consentimentoEmails ? ['Emails_Sim'] : [])];
 
-  const [existente, tags] = await Promise.all([procurarContacto(chave, v.email, sinal), idsDasTags(chave, nomes, sinal)]);
+  const [existente, tags] = await Promise.all([procurarContacto(ctx, v.email), idsDasTags(ctx, nomes)]);
 
   let contacto;
   if (existente) {
-    contacto = await actualizarContacto(chave, existente.id, fields, sinal);
+    contacto = await actualizarContacto(ctx, existente.id, fields);
   } else {
-    const res = await systeme(chave, '/contacts', sinal, { method: 'POST', body: { email: v.email, locale: 'pt', fields } });
+    const res = await systeme(ctx, 'criar', '/contacts', { method: 'POST', body: { email: v.email, locale: 'pt', fields } });
     if (res.ok) {
       contacto = await res.json();
     } else if (res.status === 422) {
       // Pode ter sido criado entretanto (outro pedido com o mesmo email).
-      const outro = await procurarContacto(chave, v.email, sinal);
-      if (!outro) throw new Error('systeme criar: 422 ' + (await res.text()));
-      contacto = await actualizarContacto(chave, outro.id, fields, sinal);
+      const erro = await falhou('criar', res);
+      const outro = await procurarContacto(ctx, v.email);
+      if (!outro) throw erro;
+      contacto = await actualizarContacto(ctx, outro.id, fields);
     } else {
-      throw new Error('systeme criar: ' + res.status + ' ' + (await res.text()));
+      throw await falhou('criar', res);
     }
   }
 
   const jaTem = new Set((contacto.tags || []).map((t) => t.id));
   const porPor = nomes.filter((n) => !jaTem.has(tags[n]));
   const respostas = await Promise.all(
-    porPor.map((n) => systeme(chave, `/contacts/${contacto.id}/tags`, sinal, { method: 'POST', body: { tagId: tags[n] } })),
+    porPor.map((n) => systeme(ctx, `tag ${n}`, `/contacts/${contacto.id}/tags`, { method: 'POST', body: { tagId: tags[n] } })),
   );
-  respostas.forEach((r, i) => {
-    if (!r.ok) throw new Error('systeme tag ' + porPor[i] + ': ' + r.status);
-  });
+  for (const [i, r] of respostas.entries()) if (!r.ok) throw await falhou(`tag ${porPor[i]}`, r);
 }
 
-/** Escreve o telefone no contacto, se ele existir. Devolve false se não existir. */
-async function telefoneNoSysteme(chave, { email, telefone }) {
-  const sinal = AbortSignal.timeout(SYSTEME_PRAZO_MS);
-  const contacto = await procurarContacto(chave, email, sinal);
-  if (!contacto) return false;
-  await actualizarContacto(chave, contacto.id, [{ slug: CAMPO.telefone, value: telefone }], sinal);
-  return true;
+/** Escreve o telefone no contacto. Sem contacto (a sincronização do POST ainda a correr), lança um erro que se repete. */
+async function telefoneNoSysteme(ctx, { email, telefone }) {
+  const contacto = await procurarContacto(ctx, email);
+  if (!contacto) throw new ErroSysteme('procurar', 'sem contacto', 'o contacto ainda não existe', { repetir: true, pausa: SYSTEME_PAUSA_SEM_CONTACTO_MS });
+  await actualizarContacto(ctx, contacto.id, [{ slug: CAMPO.telefone, value: telefone }]);
+}
+
+/**
+ * Corre tarefa(ctx) com o prazo de uma tentativa e, se falhar por uma razão passageira, mais uma vez.
+ * Cada tentativa deixa uma linha nos logs. Lança o último erro se não conseguir.
+ */
+async function comNovaTentativa(rotulo, chave, tarefa) {
+  for (let tentativa = 1; tentativa <= 2; tentativa++) {
+    const reg = { linhas: [], emCurso: new Map() };
+    const ctx = { chave, reg, sinal: AbortSignal.timeout(SYSTEME_PRAZO_MS) };
+    // Quando o prazo corta, guarda o que estava em curso (antes de os pedidos saírem da lista).
+    let noCorte = '';
+    ctx.sinal.addEventListener(
+      'abort',
+      () => (noCorte = [...reg.emCurso.values()].map(({ linha, inicio }) => `${linha} (${Date.now() - inicio} ms)`).join(', ')),
+      { once: true },
+    );
+    const inicio = Date.now();
+    try {
+      const resultado = await tarefa(ctx);
+      console.log(`[mapa] systeme, ${rotulo}, tentativa ${tentativa}: ok em ${Date.now() - inicio} ms · ${reg.linhas.join(' · ')}`);
+      return resultado;
+    } catch (err) {
+      const corte = ctx.sinal.aborted;
+      const motivo = corte ? `prazo de ${SYSTEME_PRAZO_MS} ms esgotado; em curso: ${noCorte || '—'}` : err.message;
+      console.error(`[mapa] systeme, ${rotulo}, tentativa ${tentativa}: ${motivo} · ${reg.linhas.join(' · ') || 'nenhum pedido acabou'}`);
+      if (tentativa === 2 || !repetivel(err)) throw err;
+      await pausa(err.pausa ?? SYSTEME_PAUSA_MS);
+    }
+  }
+}
+
+/** Depois da resposta ao browser: sincroniza o mapa e marca-o. Nunca lança (tudo fica nos logs). */
+async function sincronizarDepois(url, chave, chaveSysteme, v, totais, id) {
+  try {
+    await comNovaTentativa(`mapa ${id}`, chaveSysteme, (ctx) => sincronizarMapa(ctx, v, totais, id));
+  } catch {
+    return; // já está nos logs; systeme_sincronizado_em fica null
+  }
+  try {
+    await marcarSincronizado(url, chave, id);
+  } catch (err) {
+    console.error(`[mapa] mapa ${id}: está no systeme.io, mas não gravei systeme_sincronizado_em:`, err.message);
+  }
+}
+
+/** Depois da resposta ao browser: o telefone no contacto. Nunca lança. */
+async function telefoneDepois(chaveSysteme, v) {
+  try {
+    await comNovaTentativa(`telefone do mapa ${v.id}`, chaveSysteme, (ctx) => telefoneNoSysteme(ctx, v));
+  } catch {
+    // já está nos logs
+  }
 }
 
 // ── Handler ──────────────────────────────────────────────────
@@ -442,14 +531,9 @@ export default async function handler(req, res) {
       return falhar(res, 502);
     }
     if (!mapa) return falhar(res, 404);
-    // Só para um mapa que está no systeme.io (não os do site antigo nem os de uma sincronização falhada).
-    if (chaveSysteme && mapa.systeme_sincronizado_em) {
-      try {
-        if (!(await telefoneNoSysteme(chaveSysteme, v))) console.error('[mapa] systeme: sem contacto para o telefone do mapa', v.id);
-      } catch (err) {
-        console.error('[mapa] systeme, telefone:', err.message);
-      }
-    }
+    // Os mapas do site antigo não vão para o systeme.io. Não se espera pelo systeme_sincronizado_em:
+    // o telefone pode chegar antes de a sincronização do POST acabar (telefoneNoSysteme espera).
+    if (chaveSysteme && mapa.consentimento_texto !== TEXTO_CONSENTIMENTO_ANTERIOR) waitUntil(telefoneDepois(chaveSysteme, v));
     return res.status(200).json({ ok: true });
   }
 
@@ -495,14 +579,7 @@ export default async function handler(req, res) {
     return falhar(res, 502);
   }
 
-  // Só com o mapa gravado e o consentimento novo. Nada daqui muda a resposta.
-  if (chaveSysteme && !v.siteAntigo) {
-    try {
-      await sincronizarMapa(chaveSysteme, v, totais, id);
-      await marcarSincronizado(url, chave, id);
-    } catch (err) {
-      console.error('[mapa] systeme, mapa ' + id + ':', err.message);
-    }
-  }
+  // Só com o mapa gravado e o consentimento novo, e depois da resposta: nada daqui a atrasa nem a muda.
+  if (chaveSysteme && !v.siteAntigo) waitUntil(sincronizarDepois(url, chave, chaveSysteme, v, totais, id));
   return res.status(200).json({ ok: true, id });
 }

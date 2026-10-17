@@ -1,0 +1,8 @@
+{
+  "name": "landing-diagnostico",
+  "private": true,
+  "description": "Funções da landing (api/). Só a @vercel/functions, para o waitUntil do api/mapa.js.",
+  "dependencies": {
+    "@vercel/functions": "3.9.11"
+  }
+}

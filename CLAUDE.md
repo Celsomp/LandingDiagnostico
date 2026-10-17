@@ -128,9 +128,13 @@ Regras:
   API e o do site; pode sair quando o site antigo deixar de estar em cache.
 - **systeme.io** (desde 2026-10-17; antes o mapa não ia): depois de gravar o mapa, o `api/mapa.js`
   cria ou actualiza o contacto pelo email, com os campos (slugs em `CAMPO`), e põe `Mapa_Lead` +
-  `Lista_Celso` (+ `Emails_Sim` com a caixa opcional). Prazo de 2 s: uma falha nunca muda a
-  resposta, fica nos logs e deixa `mapas.systeme_sincronizado_em` a null. O PATCH escreve o
-  `phone_number`, se o contacto existir. A empresa vai para o nativo `company_name`. Nunca cria contactos no PATCH nem tags em lado nenhum (ids
+  `Lista_Celso` (+ `Emails_Sim` com a caixa opcional). Corre **depois da resposta** ao browser
+  (`waitUntil` do `@vercel/functions`, versão fixa no `package.json`): 8 s por tentativa e uma
+  2.ª tentativa em falhas passageiras (rede, prazo, 408, 429, 5xx). Cada pedido fica nos logs
+  (passo, endpoint sem o email, status, ms; num prazo esgotado, o que estava em curso). Uma falha
+  nunca muda a resposta e deixa `mapas.systeme_sincronizado_em` a null. O PATCH escreve o
+  `phone_number` (também depois da resposta); se o contacto ainda não existir, espera 5 s e
+  tenta outra vez. A empresa vai para o nativo `company_name`. Nunca cria contactos no PATCH nem tags em lado nenhum (ids
   das variáveis `SYSTEMEIO_TAG_*` ou pelo nome exacto). As etapas do CRM são workflows do
   systeme.io: a API não lhes mexe.
 - **A marcação da conversa do Mapa é na agenda do systeme.io** (desde 2026-10-17): a marcação
