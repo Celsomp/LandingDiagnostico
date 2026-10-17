@@ -131,7 +131,7 @@ Regras:
   cria ou actualiza o contacto pelo email, com os campos (slugs em `CAMPO`), e põe `Mapa_Lead` +
   `Lista_Celso` (+ `Emails_Sim` com a caixa opcional). Prazo de 2 s: uma falha nunca muda a
   resposta, fica nos logs e deixa `mapas.systeme_sincronizado_em` a null. O PATCH escreve o
-  `telefone`, se o contacto existir. Nunca cria contactos no PATCH nem tags em lado nenhum (ids
+  `phone_number`, se o contacto existir. A empresa vai para o nativo `company_name`. Nunca cria contactos no PATCH nem tags em lado nenhum (ids
   das variáveis `SYSTEMEIO_TAG_*` ou pelo nome exacto). As etapas do CRM são workflows do
   systeme.io: a API não lhes mexe.
 - **A marcação da conversa do Mapa é na agenda do systeme.io** (desde 2026-10-17): a marcação

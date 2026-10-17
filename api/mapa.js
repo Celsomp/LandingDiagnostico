@@ -274,10 +274,11 @@ const SYSTEME = 'https://api.systeme.io/api';
 const SYSTEME_PRAZO_MS = 2000; // para toda a sincronização de um pedido
 const SUPABASE_MARCA_PRAZO_MS = 1000;
 
-// Slugs dos campos do contacto. first_name é o campo de sistema do nome.
+// Slugs dos campos do contacto. first_name, company_name e phone_number são campos nativos do
+// systeme.io; os outros foram criados na conta pelo Celso (2026-10-17).
 const CAMPO = {
   nome: 'first_name',
-  empresa: 'empresa',
+  empresa: 'company_name',
   papel: 'papel',
   totalCustoAno: 'total_custo_ano',
   maiorPerda: 'maior_perda',
@@ -287,7 +288,7 @@ const CAMPO = {
   utmCampaign: 'utm_campaign',
   utmContent: 'utm_content',
   fbclid: 'fbclid',
-  telefone: 'telefone',
+  telefone: 'phone_number',
   mapaId: 'mapa_id',
 };
 
