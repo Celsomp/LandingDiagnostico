@@ -124,6 +124,9 @@ Regras:
   e emails de acompanhamento sobre ele, mais o uso anónimo) e a opcional
   (`TEXTO_CONSENTIMENTO_EMAILS`: emails gerais) → `mapas.consentimento_emails` e o texto. Os
   textos vivem também no `src/data/mapa.ts` do site: mudam juntos.
+  Um pedido **sem** `consentimento_emails` vem do site antigo (a caixa antiga): grava
+  `TEXTO_CONSENTIMENTO_ANTERIOR` e não vai para o systeme.io. Serve a janela entre o deploy da
+  API e o do site; pode sair quando o site antigo deixar de estar em cache.
 - **systeme.io** (desde 2026-10-17; antes o mapa não ia): depois de gravar o mapa, o `api/mapa.js`
   cria ou actualiza o contacto pelo email, com os campos (slugs em `CAMPO`), e põe `Mapa_Lead` +
   `Lista_Celso` (+ `Emails_Sim` com a caixa opcional). Prazo de 2 s: uma falha nunca muda a

@@ -23,8 +23,10 @@
 // aqui. A gravação é idempotente pelo id: repetir o mesmo envio dá 200 e uma só linha em mapas.
 // Responde { ok: true, id } (o site usa-o como eventID do Lead do Meta Pixel) ou { ok: false }.
 // Sem consentimento, não grava nada.
-// consentimento_emails? (caixa opcional dos emails gerais): sem ela vale false; outro valor que não
-// true/false dá 400. Grava-se em mapas, com o texto da caixa quando é true.
+// consentimento_emails (caixa opcional dos emails gerais): true/false; outro valor dá 400. Grava-se
+// em mapas, com o texto da caixa quando é true. O site novo envia-o sempre. Um pedido SEM o campo
+// vem do site antigo, que mostrou a caixa antiga: grava-se o texto antigo como prova
+// (TEXTO_CONSENTIMENTO_ANTERIOR) e o mapa não vai para o systeme.io.
 //
 // systeme.io: depois de o mapa ficar gravado, cria ou actualiza o contacto pelo email, com os
 // campos do mapa, e põe as tags Mapa_Lead e Lista_Celso (mais Emails_Sim com a caixa opcional).
@@ -40,8 +42,9 @@
 // O número é normalizado para E.164: 9 dígitos a começar por 9, com ou sem +351, → +351…;
 // internacional só com '+'. Igual ao CHECK mapas_telefone_e164 e ao src/scripts/mapa.ts do site.
 // Responde { ok: true } ou { ok: false } (404 se não houver mapa que corresponda).
-// Depois do UPDATE, escreve o número no campo telefone do contacto no systeme.io, se o contacto
-// existir (nunca o cria). Mesma regra do POST: uma falha não muda a resposta.
+// Depois do UPDATE, se o mapa foi sincronizado com o systeme.io, escreve o número no campo
+// telefone do contacto, se ele existir (nunca o cria). Mesma regra do POST: uma falha não muda a
+// resposta.
 
 const MAX_BYTES = 10 * 1024;
 
@@ -67,6 +70,9 @@ const NOMES = {
 // O texto exacto da caixa, guardado com cada mapa como prova do consentimento.
 const TEXTO_CONSENTIMENTO =
   'Aceito receber o meu Mapa e emails de acompanhamento sobre ele (posso sair quando quiser). As respostas podem ser usadas de forma anónima para melhorar o serviço.';
+// A caixa do site antigo (até 2026-10-17). Só para os pedidos que ainda vêm dele, sem consentimento_emails.
+const TEXTO_CONSENTIMENTO_ANTERIOR =
+  'Aceito que o Celso Pereira guarde estes dados para me mostrar o mapa, me contactar sobre ele e, de forma anónima, melhorar o serviço.';
 // A caixa opcional dos emails gerais (src/data/mapa.ts do site). Os dois textos mudam juntos.
 const TEXTO_CONSENTIMENTO_EMAILS = 'Quero receber também ideias para a minha equipa usar IA no dia a dia.';
 
@@ -150,10 +156,12 @@ function validar(b) {
 
   const link = Object.fromEntries(PARAMETROS_LINK.map((p) => [p, parametroLink(b[p])]));
 
-  if (b.consentimento_emails !== undefined && typeof b.consentimento_emails !== 'boolean') return null;
+  // Sem o campo: pedido do site antigo (ver o topo).
+  const siteAntigo = b.consentimento_emails === undefined;
+  if (!siteAntigo && typeof b.consentimento_emails !== 'boolean') return null;
   const consentimentoEmails = b.consentimento_emails === true;
 
-  return { ...b, nome, empresa, papel, email, tarefaOutra, motivo, link, consentimentoEmails };
+  return { ...b, nome, empresa, papel, email, tarefaOutra, motivo, link, consentimentoEmails, siteAntigo };
 }
 
 const nomeTarefa = (v, id) => (id === 'outra' ? v.tarefaOutra : NOMES[id]);
@@ -219,14 +227,16 @@ async function inserirMapa(url, chave, mapa) {
 }
 
 /**
- * Devolve true se o mapa ficou com este telefone: gravado agora, ou já gravado antes com o mesmo
- * número (o site repetiu o pedido). Um mapa de outro email, antigo ou com outro número fica igual.
+ * Devolve a linha do mapa ({ id, systeme_sincronizado_em }) se ficou com este telefone: gravado
+ * agora, ou já gravado antes com o mesmo número (o site repetiu o pedido). Devolve null se não
+ * houver mapa que corresponda: um mapa de outro email, antigo ou com outro número fica igual.
  */
 async function juntarTelefone(url, chave, { id, email, telefone }) {
   const filtro = `id=eq.${encodeURIComponent(id)}&email=eq.${encodeURIComponent(email)}`;
+  const campos = 'select=id,systeme_sincronizado_em';
   const desde = new Date(Date.now() - JANELA_TELEFONE_MS).toISOString();
   const res = await fetch(
-    `${url}/rest/v1/mapas?${filtro}&telefone=is.null&${COLUNA_CRIADO}=gte.${encodeURIComponent(desde)}&select=id`,
+    `${url}/rest/v1/mapas?${filtro}&telefone=is.null&${COLUNA_CRIADO}=gte.${encodeURIComponent(desde)}&${campos}`,
     {
       method: 'PATCH',
       headers: { ...cabecalhos(chave), Prefer: 'return=representation' },
@@ -234,13 +244,15 @@ async function juntarTelefone(url, chave, { id, email, telefone }) {
     },
   );
   if (!res.ok) throw new Error('telefone: ' + res.status + ' ' + (await res.text()));
-  if ((await res.json()).length > 0) return true;
+  const [gravado] = await res.json();
+  if (gravado) return gravado;
 
-  const igual = await fetch(`${url}/rest/v1/mapas?${filtro}&telefone=eq.${encodeURIComponent(telefone)}&select=id&limit=1`, {
+  const igual = await fetch(`${url}/rest/v1/mapas?${filtro}&telefone=eq.${encodeURIComponent(telefone)}&${campos}&limit=1`, {
     headers: cabecalhos(chave),
   });
   if (!igual.ok) throw new Error('telefone: ' + igual.status + ' ' + (await igual.text()));
-  return (await igual.json()).length > 0;
+  const [repetido] = await igual.json();
+  return repetido ?? null;
 }
 
 /** Marca o mapa como sincronizado com o systeme.io. */
@@ -421,15 +433,16 @@ export default async function handler(req, res) {
   if (!chaveSysteme) console.error('[mapa] falta SYSTEMEIO_KEY: o systeme.io fica de fora');
 
   if (req.method === 'PATCH') {
-    let juntou;
+    let mapa;
     try {
-      juntou = await juntarTelefone(url, chave, v);
+      mapa = await juntarTelefone(url, chave, v);
     } catch (err) {
       console.error('[mapa] erro ao juntar telefone:', err.message);
       return falhar(res, 502);
     }
-    if (!juntou) return falhar(res, 404);
-    if (chaveSysteme) {
+    if (!mapa) return falhar(res, 404);
+    // Só para um mapa que está no systeme.io (não os do site antigo nem os de uma sincronização falhada).
+    if (chaveSysteme && mapa.systeme_sincronizado_em) {
       try {
         if (!(await telefoneNoSysteme(chaveSysteme, v))) console.error('[mapa] systeme: sem contacto para o telefone do mapa', v.id);
       } catch (err) {
@@ -458,7 +471,7 @@ export default async function handler(req, res) {
       papel: v.papel,
       email: v.email,
       consentimento: true,
-      consentimento_texto: TEXTO_CONSENTIMENTO,
+      consentimento_texto: v.siteAntigo ? TEXTO_CONSENTIMENTO_ANTERIOR : TEXTO_CONSENTIMENTO,
       consentimento_emails: v.consentimentoEmails,
       consentimento_emails_texto: v.consentimentoEmails ? TEXTO_CONSENTIMENTO_EMAILS : null,
       pessoas: v.pessoas,
@@ -481,8 +494,8 @@ export default async function handler(req, res) {
     return falhar(res, 502);
   }
 
-  // Só com o mapa gravado. Nada daqui muda a resposta.
-  if (chaveSysteme) {
+  // Só com o mapa gravado e o consentimento novo. Nada daqui muda a resposta.
+  if (chaveSysteme && !v.siteAntigo) {
     try {
       await sincronizarMapa(chaveSysteme, v, totais, id);
       await marcarSincronizado(url, chave, id);
