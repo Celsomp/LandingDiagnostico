@@ -26,6 +26,12 @@
 // consentimento_emails? (caixa opcional dos emails gerais): sem ela vale false; outro valor que não
 // true/false dá 400. Grava-se em mapas, com o texto da caixa quando é true.
 //
+// systeme.io: depois de o mapa ficar gravado, cria ou actualiza o contacto pelo email, com os
+// campos do mapa, e põe as tags Mapa_Lead e Lista_Celso (mais Emails_Sim com a caixa opcional).
+// Se correr bem, grava mapas.systeme_sincronizado_em. Tem um prazo curto (SYSTEME_PRAZO_MS) e
+// nunca muda a resposta: uma falha fica só nos logs. Nunca cria tags: os ids vêm das variáveis
+// SYSTEMEIO_TAG_*, ou do nome exacto na lista de tags da conta.
+//
 // PATCH /api/mapa, JSON: { id, email, telefone, consentimento: true }
 // Junta o telemóvel (opcional, pedido depois do resultado) ao mapa acabado de gravar. Só actualiza
 // mapas.telefone e mapas.telefone_consentimento_em, e só na linha com esse id E esse email, ainda
@@ -34,6 +40,8 @@
 // O número é normalizado para E.164: 9 dígitos a começar por 9, com ou sem +351, → +351…;
 // internacional só com '+'. Igual ao CHECK mapas_telefone_e164 e ao src/scripts/mapa.ts do site.
 // Responde { ok: true } ou { ok: false } (404 se não houver mapa que corresponda).
+// Depois do UPDATE, escreve o número no campo telefone do contacto no systeme.io, se o contacto
+// existir (nunca o cria). Mesma regra do POST: uma falha não muda a resposta.
 
 const MAX_BYTES = 10 * 1024;
 
@@ -148,6 +156,8 @@ function validar(b) {
   return { ...b, nome, empresa, papel, email, tarefaOutra, motivo, link, consentimentoEmails };
 }
 
+const nomeTarefa = (v, id) => (id === 'outra' ? v.tarefaOutra : NOMES[id]);
+
 const dezenas = (n) => Math.round(n / 10) * 10;
 
 function calcular(tarefas, horas, custo) {
@@ -233,6 +243,152 @@ async function juntarTelefone(url, chave, { id, email, telefone }) {
   return (await igual.json()).length > 0;
 }
 
+/** Marca o mapa como sincronizado com o systeme.io. */
+async function marcarSincronizado(url, chave, id) {
+  const res = await fetch(`${url}/rest/v1/mapas?id=eq.${encodeURIComponent(id)}`, {
+    method: 'PATCH',
+    headers: { ...cabecalhos(chave), Prefer: 'return=minimal' },
+    body: JSON.stringify({ systeme_sincronizado_em: new Date().toISOString() }),
+    signal: AbortSignal.timeout(SUPABASE_MARCA_PRAZO_MS),
+  });
+  if (!res.ok) throw new Error('sincronizado: ' + res.status + ' ' + (await res.text()));
+}
+
+// ── systeme.io ───────────────────────────────────────────────
+// API pública: chave em X-API-Key; PATCH com application/merge-patch+json; campos por slug.
+// O site corta o pedido aos 6 s: o Supabase mais estes prazos têm de caber lá dentro.
+
+const SYSTEME = 'https://api.systeme.io/api';
+const SYSTEME_PRAZO_MS = 2000; // para toda a sincronização de um pedido
+const SUPABASE_MARCA_PRAZO_MS = 1000;
+
+// Slugs dos campos do contacto. first_name é o campo de sistema do nome.
+const CAMPO = {
+  nome: 'first_name',
+  empresa: 'empresa',
+  papel: 'papel',
+  totalCustoAno: 'total_custo_ano',
+  maiorPerda: 'maior_perda',
+  nivelIa: 'nivel_ia',
+  preocupacao: 'preocupacao',
+  utmSource: 'utm_source',
+  utmCampaign: 'utm_campaign',
+  utmContent: 'utm_content',
+  fbclid: 'fbclid',
+  telefone: 'telefone',
+  mapaId: 'mapa_id',
+};
+
+// Nome exacto da tag → variável de ambiente com o id dela.
+const TAG_VARIAVEL = {
+  Mapa_Lead: 'SYSTEMEIO_TAG_MAPA_LEAD',
+  Lista_Celso: 'SYSTEMEIO_TAG_LISTA_CELSO',
+  Emails_Sim: 'SYSTEMEIO_TAG_EMAILS_SIM',
+};
+
+function systeme(chave, caminho, sinal, { method = 'GET', body, merge = false } = {}) {
+  const headers = { 'X-API-Key': chave };
+  if (body) headers['Content-Type'] = merge ? 'application/merge-patch+json' : 'application/json';
+  return fetch(SYSTEME + caminho, { method, headers, body: body && JSON.stringify(body), signal: sinal });
+}
+
+async function procurarContacto(chave, email, sinal) {
+  const res = await systeme(chave, `/contacts?email=${encodeURIComponent(email)}`, sinal);
+  if (!res.ok) throw new Error('systeme procurar: ' + res.status + ' ' + (await res.text()));
+  const { items } = await res.json();
+  return items?.[0] ?? null;
+}
+
+async function actualizarContacto(chave, id, fields, sinal) {
+  const res = await systeme(chave, `/contacts/${id}`, sinal, { method: 'PATCH', body: { fields }, merge: true });
+  if (!res.ok) throw new Error('systeme actualizar: ' + res.status + ' ' + (await res.text()));
+  return res.json();
+}
+
+/** Ids das tags pelas variáveis SYSTEMEIO_TAG_*; as que faltarem, pelo nome exacto. Nunca cria tags. */
+async function idsDasTags(chave, nomes, sinal) {
+  const ids = {};
+  const faltam = [];
+  for (const nome of nomes) {
+    const n = Number(process.env[TAG_VARIAVEL[nome]]);
+    if (Number.isInteger(n) && n > 0) ids[nome] = n;
+    else faltam.push(nome);
+  }
+  if (faltam.length === 0) return ids;
+  const res = await systeme(chave, '/tags?limit=100', sinal);
+  if (!res.ok) throw new Error('systeme tags: ' + res.status + ' ' + (await res.text()));
+  const { items = [] } = await res.json();
+  for (const nome of faltam) {
+    const tag = items.find((t) => t.name === nome);
+    if (!tag) throw new Error('systeme: a tag ' + nome + ' não existe na conta');
+    ids[nome] = tag.id;
+  }
+  return ids;
+}
+
+/** Os campos do contacto. Os parâmetros do link vazios não se enviam: não apagam os de um mapa anterior. */
+function camposDoMapa(v, totais, id) {
+  const campos = [
+    [CAMPO.nome, v.nome],
+    [CAMPO.empresa, v.empresa],
+    [CAMPO.papel, v.papel],
+    [CAMPO.totalCustoAno, String(totais.total_custo_ano)],
+    [CAMPO.maiorPerda, nomeTarefa(v, totais.maior_perda)],
+    [CAMPO.nivelIa, v.nivel_ia],
+    [CAMPO.preocupacao, v.preocupacao],
+    [CAMPO.utmSource, v.link.utm_source],
+    [CAMPO.utmCampaign, v.link.utm_campaign],
+    [CAMPO.utmContent, v.link.utm_content],
+    [CAMPO.fbclid, v.link.fbclid ? 'sim' : 'não'],
+    [CAMPO.mapaId, id],
+  ];
+  return campos.filter(([, value]) => value !== null).map(([slug, value]) => ({ slug, value }));
+}
+
+/** Cria ou actualiza o contacto e põe-lhe as tags que ainda não tem. Lança erro se algo falhar. */
+async function sincronizarMapa(chave, v, totais, id) {
+  const sinal = AbortSignal.timeout(SYSTEME_PRAZO_MS);
+  const fields = camposDoMapa(v, totais, id);
+  const nomes = ['Mapa_Lead', 'Lista_Celso', ...(v.consentimentoEmails ? ['Emails_Sim'] : [])];
+
+  const [existente, tags] = await Promise.all([procurarContacto(chave, v.email, sinal), idsDasTags(chave, nomes, sinal)]);
+
+  let contacto;
+  if (existente) {
+    contacto = await actualizarContacto(chave, existente.id, fields, sinal);
+  } else {
+    const res = await systeme(chave, '/contacts', sinal, { method: 'POST', body: { email: v.email, locale: 'pt', fields } });
+    if (res.ok) {
+      contacto = await res.json();
+    } else if (res.status === 422) {
+      // Pode ter sido criado entretanto (outro pedido com o mesmo email).
+      const outro = await procurarContacto(chave, v.email, sinal);
+      if (!outro) throw new Error('systeme criar: 422 ' + (await res.text()));
+      contacto = await actualizarContacto(chave, outro.id, fields, sinal);
+    } else {
+      throw new Error('systeme criar: ' + res.status + ' ' + (await res.text()));
+    }
+  }
+
+  const jaTem = new Set((contacto.tags || []).map((t) => t.id));
+  const porPor = nomes.filter((n) => !jaTem.has(tags[n]));
+  const respostas = await Promise.all(
+    porPor.map((n) => systeme(chave, `/contacts/${contacto.id}/tags`, sinal, { method: 'POST', body: { tagId: tags[n] } })),
+  );
+  respostas.forEach((r, i) => {
+    if (!r.ok) throw new Error('systeme tag ' + porPor[i] + ': ' + r.status);
+  });
+}
+
+/** Escreve o telefone no contacto, se ele existir. Devolve false se não existir. */
+async function telefoneNoSysteme(chave, { email, telefone }) {
+  const sinal = AbortSignal.timeout(SYSTEME_PRAZO_MS);
+  const contacto = await procurarContacto(chave, email, sinal);
+  if (!contacto) return false;
+  await actualizarContacto(chave, contacto.id, [{ slug: CAMPO.telefone, value: telefone }], sinal);
+  return true;
+}
+
 // ── Handler ──────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -261,20 +417,32 @@ export default async function handler(req, res) {
     return falhar(res, 500);
   }
 
+  const chaveSysteme = process.env.SYSTEMEIO_KEY;
+  if (!chaveSysteme) console.error('[mapa] falta SYSTEMEIO_KEY: o systeme.io fica de fora');
+
   if (req.method === 'PATCH') {
+    let juntou;
     try {
-      return (await juntarTelefone(url, chave, v)) ? res.status(200).json({ ok: true }) : falhar(res, 404);
+      juntou = await juntarTelefone(url, chave, v);
     } catch (err) {
       console.error('[mapa] erro ao juntar telefone:', err.message);
       return falhar(res, 502);
     }
+    if (!juntou) return falhar(res, 404);
+    if (chaveSysteme) {
+      try {
+        if (!(await telefoneNoSysteme(chaveSysteme, v))) console.error('[mapa] systeme: sem contacto para o telefone do mapa', v.id);
+      } catch (err) {
+        console.error('[mapa] systeme, telefone:', err.message);
+      }
+    }
+    return res.status(200).json({ ok: true });
   }
 
   const totais = calcular(v.tarefas, v.horas, v.custo_hora);
-  const nomeTarefa = (id) => (id === 'outra' ? v.tarefaOutra : NOMES[id]);
   const resumo =
     `Mapa de automação · ${v.empresa} · ${euros(totais.total_custo_ano)} €/ano · ` +
-    `maior perda: ${nomeTarefa(totais.maior_perda)}\n` +
+    `maior perda: ${nomeTarefa(v, totais.maior_perda)}\n` +
     `Frase do Mapa: «${v.motivo}»`;
 
   // O id vem do site, igual nas duas tentativas do mesmo envio: assim a 2.ª não duplica o mapa.
@@ -308,9 +476,19 @@ export default async function handler(req, res) {
       ...v.link,
       ...totais,
     });
-    return res.status(200).json({ ok: true, id });
   } catch (err) {
     console.error('[mapa] erro:', err.message);
     return falhar(res, 502);
   }
+
+  // Só com o mapa gravado. Nada daqui muda a resposta.
+  if (chaveSysteme) {
+    try {
+      await sincronizarMapa(chaveSysteme, v, totais, id);
+      await marcarSincronizado(url, chave, id);
+    } catch (err) {
+      console.error('[mapa] systeme, mapa ' + id + ':', err.message);
+    }
+  }
+  return res.status(200).json({ ok: true, id });
 }

@@ -124,7 +124,15 @@ Regras:
   e emails de acompanhamento sobre ele, mais o uso anónimo) e a opcional
   (`TEXTO_CONSENTIMENTO_EMAILS`: emails gerais) → `mapas.consentimento_emails` e o texto. Os
   textos vivem também no `src/data/mapa.ts` do site: mudam juntos.
-- O mapa **não** vai para o systeme.io (o consentimento não cobre listas de email).
+- **systeme.io** (desde 2026-10-17; antes o mapa não ia): depois de gravar o mapa, o `api/mapa.js`
+  cria ou actualiza o contacto pelo email, com os campos (slugs em `CAMPO`), e põe `Mapa_Lead` +
+  `Lista_Celso` (+ `Emails_Sim` com a caixa opcional). Prazo de 2 s: uma falha nunca muda a
+  resposta, fica nos logs e deixa `mapas.systeme_sincronizado_em` a null. O PATCH escreve o
+  `telefone`, se o contacto existir. Nunca cria contactos no PATCH nem tags em lado nenhum (ids
+  das variáveis `SYSTEMEIO_TAG_*` ou pelo nome exacto). As etapas do CRM são workflows do
+  systeme.io: a API não lhes mexe.
+- **`api/calcom.js`:** webhook `BOOKING_CREATED` do evento `mapa` → tag `Conversa_Marcada`.
+  Assinatura `X-Cal-Signature-256` com `CALCOM_WEBHOOK_SECRET`; sem ela, 401 e nada mais.
 - `gestoria.pt` redirecciona agora para `https://celsopereira.pt/mapa`.
 
 ## Leads — REGRA
