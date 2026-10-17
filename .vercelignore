@@ -1,0 +1,3 @@
+# Fora do deploy da Vercel (este projecto publica a raiz como site estático).
+# supabase/: código das Edge Functions, publicado no Supabase e não aqui.
+supabase
