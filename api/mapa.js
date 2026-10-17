@@ -23,6 +23,8 @@
 // aqui. A gravação é idempotente pelo id: repetir o mesmo envio dá 200 e uma só linha em mapas.
 // Responde { ok: true, id } (o site usa-o como eventID do Lead do Meta Pixel) ou { ok: false }.
 // Sem consentimento, não grava nada.
+// consentimento_emails? (caixa opcional dos emails gerais): sem ela vale false; outro valor que não
+// true/false dá 400. Grava-se em mapas, com o texto da caixa quando é true.
 //
 // PATCH /api/mapa, JSON: { id, email, telefone, consentimento: true }
 // Junta o telemóvel (opcional, pedido depois do resultado) ao mapa acabado de gravar. Só actualiza
@@ -56,7 +58,9 @@ const NOMES = {
 };
 // O texto exacto da caixa, guardado com cada mapa como prova do consentimento.
 const TEXTO_CONSENTIMENTO =
-  'Aceito que o Celso Pereira guarde estes dados para me mostrar o mapa, me contactar sobre ele e, de forma anónima, melhorar o serviço.';
+  'Aceito receber o meu Mapa e emails de acompanhamento sobre ele (posso sair quando quiser). As respostas podem ser usadas de forma anónima para melhorar o serviço.';
+// A caixa opcional dos emails gerais (src/data/mapa.ts do site). Os dois textos mudam juntos.
+const TEXTO_CONSENTIMENTO_EMAILS = 'Quero receber também ideias para a minha equipa usar IA no dia a dia.';
 
 const EMAIL_RE = /^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -138,7 +142,10 @@ function validar(b) {
 
   const link = Object.fromEntries(PARAMETROS_LINK.map((p) => [p, parametroLink(b[p])]));
 
-  return { ...b, nome, empresa, papel, email, tarefaOutra, motivo, link };
+  if (b.consentimento_emails !== undefined && typeof b.consentimento_emails !== 'boolean') return null;
+  const consentimentoEmails = b.consentimento_emails === true;
+
+  return { ...b, nome, empresa, papel, email, tarefaOutra, motivo, link, consentimentoEmails };
 }
 
 const dezenas = (n) => Math.round(n / 10) * 10;
@@ -284,6 +291,8 @@ export default async function handler(req, res) {
       email: v.email,
       consentimento: true,
       consentimento_texto: TEXTO_CONSENTIMENTO,
+      consentimento_emails: v.consentimentoEmails,
+      consentimento_emails_texto: v.consentimentoEmails ? TEXTO_CONSENTIMENTO_EMAILS : null,
       pessoas: v.pessoas,
       tarefa_1: v.tarefas[0],
       horas_1: v.horas[v.tarefas[0]],

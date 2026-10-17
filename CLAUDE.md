@@ -120,6 +120,10 @@ Regras:
 - `api/mapa.js` grava em `public.mapas` (projecto Supabase Claude) e, se o email for novo, cria a
   lead em `public.leads` com `origem = 'mapa'`. Sem `consentimento: true`, recusa. Os totais são
   recalculados aqui: a conta tem de bater com `src/scripts/mapa-calculo.ts` do site.
+- **Dois consentimentos** (desde 2026-10-17): a caixa obrigatória (`TEXTO_CONSENTIMENTO`: o mapa
+  e emails de acompanhamento sobre ele, mais o uso anónimo) e a opcional
+  (`TEXTO_CONSENTIMENTO_EMAILS`: emails gerais) → `mapas.consentimento_emails` e o texto. Os
+  textos vivem também no `src/data/mapa.ts` do site: mudam juntos.
 - O mapa **não** vai para o systeme.io (o consentimento não cobre listas de email).
 - `gestoria.pt` redirecciona agora para `https://celsopereira.pt/mapa`.
 
