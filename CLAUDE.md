@@ -131,10 +131,9 @@ Regras:
   `telefone`, se o contacto existir. Nunca cria contactos no PATCH nem tags em lado nenhum (ids
   das variáveis `SYSTEMEIO_TAG_*` ou pelo nome exacto). As etapas do CRM são workflows do
   systeme.io: a API não lhes mexe.
-- **`api/calcom.js`:** webhook `BOOKING_CREATED` do evento `mapa` → tag `Conversa_Marcada`.
-  Assinatura `X-Cal-Signature-256` com `CALCOM_WEBHOOK_SECRET`; sem ela, 401 e nada mais.
-  O cal.com não reenvia: a função tenta o systeme.io 3 vezes (pausas de 300 e 600 ms) e, se
-  falhar, grava cada email em `public.webhook_falhas` e responde 502. Tudo cabe em ~10 s.
+- **A marcação da conversa do Mapa é na agenda do systeme.io** (desde 2026-10-17): a marcação
+  cria o contacto e uma regra nativa do systeme.io põe a tag `Conversa_Marcada`. Não há webhook
+  do cal.com neste projecto (houve um `api/calcom.js`, revertido antes de ser publicado).
 - `gestoria.pt` redirecciona agora para `https://celsopereira.pt/mapa`.
 
 ## Leads — REGRA
