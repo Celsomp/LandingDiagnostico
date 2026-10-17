@@ -12,7 +12,10 @@
 // Só conta a marcação criada (BOOKING_CREATED) do tipo de evento do Mapa (EVENTO_MAPA, o slug em
 // payload.type). O resto, incluindo o teste de ping do cal.com, responde 200 sem fazer nada.
 // Nunca cria contactos nem tags: um email que não existe no systeme.io fica só nos logs (200).
-// Uma falha do systeme.io responde 502 e fica nos logs.
+// O cal.com não reenvia webhooks (um só envio, sem fila). Por isso tenta-se o systeme.io até
+// 3 vezes, com uma pausa curta entre elas. Se as 3 falharem, cada email da marcação fica em
+// public.webhook_falhas (projecto Supabase Claude) e a resposta é 502. Tudo cabe em ~10 s,
+// o limite mais curto de uma função na Vercel.
 // Os pedidos ao systeme.io seguem o api/mapa.js (X-API-Key, procura pelo email, tag por id).
 
 import { createHmac, timingSafeEqual } from 'node:crypto';
@@ -22,7 +25,9 @@ const EVENTO_MAPA = 'mapa'; // cal.com/celso-pereira/mapa
 const MAX_PARTICIPANTES = 10;
 
 const SYSTEME = 'https://api.systeme.io/api';
-const SYSTEME_PRAZO_MS = 5000; // ninguém espera por esta resposta: o prazo pode ser folgado
+const SYSTEME_PRAZO_MS = 2000; // por tentativa
+const PAUSAS_MS = [300, 600]; // antes da 2.ª e da 3.ª tentativa
+const SUPABASE_PRAZO_MS = 1500;
 const TAG = 'Conversa_Marcada';
 const TAG_VARIAVEL = 'SYSTEMEIO_TAG_CONVERSA_MARCADA';
 
@@ -74,6 +79,52 @@ function emailsDosParticipantes(payload) {
 // Nos logs, o email vai tapado: t•••@exemplo.pt.
 const tapar = (email) => email.replace(/^(.)[^@]*/, '$1•••');
 
+const pausa = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/** Uma tentativa: põe a tag em cada contacto que exista. Lança erro se o systeme.io falhar. */
+async function porTag(chave, emails, uid) {
+  const sinal = AbortSignal.timeout(SYSTEME_PRAZO_MS);
+  const [tagId, ...contactos] = await Promise.all([idDaTag(chave, sinal), ...emails.map((e) => procurarContacto(chave, e, sinal))]);
+  for (const [i, contacto] of contactos.entries()) {
+    if (!contacto) {
+      console.error('[calcom] email sem contacto no systeme.io (marcação ' + uid + '):', tapar(emails[i]));
+      continue;
+    }
+    if ((contacto.tags || []).some((t) => t.id === tagId)) continue;
+    const res = await systeme(chave, `/contacts/${contacto.id}/tags`, sinal, { method: 'POST', body: { tagId } });
+    if (!res.ok) throw new Error('systeme tag: ' + res.status + ' ' + (await res.text()));
+  }
+}
+
+/** Grava a falha em public.webhook_falhas, uma linha por email. Se o Supabase falhar, fica nos logs. */
+async function registarFalha(emails, uid, erro) {
+  const url = process.env.LEADS_SUPABASE_URL;
+  const chave = process.env.LEADS_SUPABASE_SECRET;
+  if (!url || !chave) {
+    console.error('[calcom] faltam LEADS_SUPABASE_URL / LEADS_SUPABASE_SECRET: falha não gravada');
+    return;
+  }
+  const headers = { apikey: chave, 'Content-Type': 'application/json', Prefer: 'return=minimal' };
+  if (chave.startsWith('eyJ')) headers.Authorization = 'Bearer ' + chave;
+  const linhas = emails.map((email) => ({
+    origem: 'calcom',
+    email,
+    marcacao_uid: typeof uid === 'string' ? uid.slice(0, 200) : null,
+    erro: String(erro).slice(0, 500),
+  }));
+  try {
+    const res = await fetch(`${url}/rest/v1/webhook_falhas`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(linhas),
+      signal: AbortSignal.timeout(SUPABASE_PRAZO_MS),
+    });
+    if (!res.ok) throw new Error(res.status + ' ' + (await res.text()));
+  } catch (err) {
+    console.error('[calcom] não consegui gravar em webhook_falhas (marcação ' + uid + '):', err.message);
+  }
+}
+
 export default {
   async fetch(request) {
     if (request.method !== 'POST') return Response.json({ ok: false }, { status: 405, headers: { Allow: 'POST' } });
@@ -113,22 +164,19 @@ export default {
       return responder(200, { ok: true, ignorado: true });
     }
 
-    const sinal = AbortSignal.timeout(SYSTEME_PRAZO_MS);
-    try {
-      const [tagId, ...contactos] = await Promise.all([idDaTag(chave, sinal), ...emails.map((e) => procurarContacto(chave, e, sinal))]);
-      for (const [i, contacto] of contactos.entries()) {
-        if (!contacto) {
-          console.error('[calcom] email sem contacto no systeme.io (marcação ' + evento.payload?.uid + '):', tapar(emails[i]));
-          continue;
-        }
-        if ((contacto.tags || []).some((t) => t.id === tagId)) continue;
-        const res = await systeme(chave, `/contacts/${contacto.id}/tags`, sinal, { method: 'POST', body: { tagId } });
-        if (!res.ok) throw new Error('systeme tag: ' + res.status + ' ' + (await res.text()));
+    const uid = evento.payload?.uid;
+    let erro;
+    for (let tentativa = 1; tentativa <= PAUSAS_MS.length + 1; tentativa++) {
+      try {
+        await porTag(chave, emails, uid);
+        return responder(200);
+      } catch (err) {
+        erro = err.message;
+        console.error(`[calcom] systeme, marcação ${uid}, tentativa ${tentativa}:`, erro);
       }
-    } catch (err) {
-      console.error('[calcom] systeme, marcação ' + evento.payload?.uid + ':', err.message);
-      return responder(502);
+      if (tentativa <= PAUSAS_MS.length) await pausa(PAUSAS_MS[tentativa - 1]);
     }
-    return responder(200);
+    await registarFalha(emails, uid, erro);
+    return responder(502);
   },
 };

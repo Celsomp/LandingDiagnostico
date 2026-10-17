@@ -133,6 +133,8 @@ Regras:
   systeme.io: a API não lhes mexe.
 - **`api/calcom.js`:** webhook `BOOKING_CREATED` do evento `mapa` → tag `Conversa_Marcada`.
   Assinatura `X-Cal-Signature-256` com `CALCOM_WEBHOOK_SECRET`; sem ela, 401 e nada mais.
+  O cal.com não reenvia: a função tenta o systeme.io 3 vezes (pausas de 300 e 600 ms) e, se
+  falhar, grava cada email em `public.webhook_falhas` e responde 502. Tudo cabe em ~10 s.
 - `gestoria.pt` redirecciona agora para `https://celsopereira.pt/mapa`.
 
 ## Leads — REGRA
