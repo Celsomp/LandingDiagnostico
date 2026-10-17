@@ -21,11 +21,10 @@ Diagnóstico de Lançamento. Página HTML/CSS/JS estática, sem framework.
   consentimento). Ícone novo → copiar o `<svg>` do lucide.dev (stroke 2, `currentColor`),
   com a classe do componente e `aria-hidden="true" focusable="false"`. O `quiz.js` não
   cria ícones; se passar a criar, vão como SVG na string do template.
-- Agendamento: Cal.com (`https://cal.com/celso-pereira/diagnostico`), aberto num
-  separador novo pelo botão `#ctaMarcacao` do relatório, com `name` e `email`
-  pré-preenchidos. Sem widget embebido.
+- Agendamento: o Cal.com deixou de existir (2026-10-17). O botão `#ctaMarcacao` do relatório
+  abre `https://celsopereira.pt/mapa` num separador novo (o Diagnóstico redirecciona para lá).
 - WhatsApp no fim do relatório: **opcional de verdade** (desde 2026-09-29). O botão
-  `#ctaMarcacao` está sempre activo e abre sempre o Cal.com; não há bloqueio nem nota.
+  `#ctaMarcacao` está sempre activo; não há bloqueio nem nota.
   O número grava-se uma vez (acção `whatsapp`), no blur do campo ou no clique do CTA,
   o que vier primeiro (o Safari não tira o foco do campo ao clicar num botão).
 

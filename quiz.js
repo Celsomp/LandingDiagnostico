@@ -713,12 +713,8 @@ function initReportAnimations(score, gapLancamento, email) {
       guardarWhatsapp();
       if (typeof track === 'function') track('marcacao_cta_click');
 
-      const nome = document.getElementById('gateName').value.trim();
-      const email = submittedEmail;
-      const baseUrl = 'https://cal.com/celso-pereira/diagnostico';
-      const params = new URLSearchParams({ name: nome, email: email });
-
-      window.open(baseUrl + '?' + params.toString(), '_blank');
+      // O Cal.com deixou de existir (2026-10-17) e o Diagnóstico redirecciona para o Mapa.
+      window.open('https://celsopereira.pt/mapa', '_blank');
     });
   }
 }
