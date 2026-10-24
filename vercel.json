@@ -29,19 +29,5 @@
       "destination": "https://celsopereira.pt/mapa",
       "permanent": true
     }
-  ],
-  "rewrites": [
-    {
-      "source": "/playbook",
-      "destination": "https://backoffice-auditoria.vercel.app/playbook"
-    },
-    {
-      "source": "/playbook/:path*",
-      "destination": "https://backoffice-auditoria.vercel.app/playbook/:path*"
-    },
-    {
-      "source": "/auditoria/:path*",
-      "destination": "https://backoffice-auditoria.vercel.app/playbook/auditoria/:path*"
-    }
   ]
 }
