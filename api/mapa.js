@@ -2,7 +2,17 @@
 // Chamado por rewrite: celsopereira.pt/api/mapa → este projecto (/api/mapa).
 // A chave secreta só existe aqui. O browser nunca fala com o Supabase.
 //
-// POST /api/mapa, JSON:
+// POST /api/mapa, JSON. Duas versões do Mapa (mapas.versao_mapa):
+// Versão 2 (2026-10-24, "onde perdes clientes"), com versao_mapa: 2:
+//   { versao_mapa: 2, nome, empresa, email, consentimento: true, consentimento_emails,
+//     setor, setor_outro?, papel, canais: [ids], contactos_semana, tempo_resposta, fora_horas,
+//     seguimento, marcacoes: boolean, faltas_semana?, horas_semana?, custo_hora?, valor_cliente?,
+//     preocupacao, urgencia, motivo, utm_source?, utm_medium?, utm_campaign?, utm_content?, fbclid? }
+//   Os números (horas_semana, custo_hora, valor_cliente) são opcionais: null = "Não sei" ou em branco.
+//   A conta, os pontos de perda e os serviços sugeridos são recalculados aqui (mesmas regras do
+//   src/scripts/mapa-calculo.ts do site — se mudar lá, muda aqui).
+// Versão 1 (formação para equipas, até 2026-10-24), sem versao_mapa: só para os pedidos do site
+// antigo durante a publicação. Sai quando o site novo estiver em produção.
 //   { nome, empresa, papel?, email, consentimento: true, pessoas, tarefas: [3 ids], tarefa_outra?,
 //     horas: { id: intervalo }, custo_hora, nivel_ia, preocupacao, motivo,
 //     utm_source?, utm_medium?, utm_campaign?, utm_content?, fbclid? }
@@ -12,8 +22,7 @@
 // O motivo é obrigatório: 15 a 400 caracteres depois do trim, contados como o char_length do
 // CHECK mapas_motivo_valido. Grava-se tal como veio (só trim).
 // A validação corre toda antes de qualquer escrita: um pedido recusado não grava nada.
-// Os totais NÃO vêm do browser: são recalculados aqui (mesma conta do src/scripts/mapa-calculo.ts
-// do site — se mudar lá, muda aqui).
+// Os totais NÃO vêm do browser: são recalculados aqui.
 // Também cria a lead em public.leads (origem "mapa") se o email ainda não existir, para a ficha
 // chegar ao Notion. O motivo vai em respostas.motivo (propriedade "Frase do Mapa", pela função
 // leads-para-notion) e no fim do resumo ("Frase do Mapa: «…»"). Tem de ir na própria lead: o
@@ -69,6 +78,52 @@ const NOMES = {
   atendimento: 'Atendimento e marcações',
   chamadas: 'Chamadas e seguimento de contactos',
 };
+// ── Versão 2 (2026-10-24) ─────────────────────────────────────
+// Os ids batem certo com src/data/mapa.ts do site.
+const V2 = {
+  setor: ['imobiliaria', 'saude', 'estetica', 'ginasio', 'escola', 'oficina', 'domicilio', 'restauracao', 'contabilidade', 'comercio', 'outro'],
+  papel: ['dono', 'responsavel', 'outro'],
+  canais: ['whatsapp', 'telefone', 'formulario', 'email', 'portais', 'redes'],
+  contactos_semana: ['menos_10', '10_30', '30_100', 'mais_100'],
+  tempo_resposta: ['minutos', 'ate_1h', 'mesmo_dia', 'dia_seguinte', 'nao_sei'],
+  fora_horas: ['ninguem', 'eu_noite', 'automatica', 'alguem'],
+  seguimento: ['sempre', 'as_vezes', 'quase_nunca'],
+  faltas_semana: ['nenhuma', '1_2', '3_5', 'mais_5'],
+  preocupacao: ['custo', 'dados', 'ia_erra'],
+  urgencia: ['este_mes', '3_meses', 'explorar'],
+};
+// Um valor baixo em cada intervalo (conservador), como o site.
+const V2_HORAS = { menos_5: 2, '5_10': 5, '10_20': 10, mais_20: 20 };
+const V2_CUSTO = { menos_10: 8, '10_15': 10, '15_20': 15, mais_20: 20 };
+const V2_VALOR = { menos_100: 50, '100_500': 100, '500_2000': 500, mais_2000: 2000 };
+const V2_SERVICOS = {
+  atendimento: 'Agente de atendimento no WhatsApp',
+  qualificacao: 'Agente de qualificação e seguimento de leads',
+  resposta_imediata: 'Resposta imediata a leads',
+  lembretes: 'Confirmação e lembrete de marcações',
+};
+const V2_PONTOS = {
+  resposta_lenta: 'Resposta lenta',
+  resposta_nao_sei: 'Tempo de resposta desconhecido',
+  fora_horas_ninguem: 'Ninguém responde fora de horas',
+  fora_horas_eu: 'O dono responde à noite',
+  seguimento_quase_nunca: 'Quase sem seguimento',
+  seguimento_as_vezes: 'Seguimento irregular',
+  faltas: 'Faltas a marcações',
+};
+const V2_SETORES = {
+  imobiliaria: 'Imobiliária',
+  saude: 'Clínica ou saúde',
+  estetica: 'Estética e bem-estar',
+  ginasio: 'Ginásio ou estúdio',
+  escola: 'Escola ou formação',
+  oficina: 'Oficina ou serviços técnicos',
+  domicilio: 'Serviços ao domicílio',
+  restauracao: 'Restauração',
+  contabilidade: 'Contabilidade ou consultoria',
+  comercio: 'Comércio',
+};
+
 // O texto exacto da caixa, guardado com cada mapa como prova do consentimento.
 const TEXTO_CONSENTIMENTO =
   'Aceito receber o meu Mapa e emails de acompanhamento sobre ele (posso sair quando quiser). As respostas podem ser usadas de forma anónima para melhorar o serviço.';
@@ -76,7 +131,9 @@ const TEXTO_CONSENTIMENTO =
 const TEXTO_CONSENTIMENTO_ANTERIOR =
   'Aceito que o Celso Pereira guarde estes dados para me mostrar o mapa, me contactar sobre ele e, de forma anónima, melhorar o serviço.';
 // A caixa opcional dos emails gerais (src/data/mapa.ts do site). Os dois textos mudam juntos.
-const TEXTO_CONSENTIMENTO_EMAILS = 'Quero receber também ideias para a minha equipa usar IA no dia a dia.';
+// A versão 2 tem texto próprio; a versão 1 grava o texto que o site antigo mostrou.
+const TEXTO_CONSENTIMENTO_EMAILS = 'Quero receber também ideias para responder a tempo aos meus clientes.';
+const TEXTO_CONSENTIMENTO_EMAILS_V1 = 'Quero receber também ideias para a minha equipa usar IA no dia a dia.';
 
 const EMAIL_RE = /^[A-Za-z0-9._%+'-]+@[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -165,6 +222,105 @@ function validar(b) {
 
   return { ...b, nome, empresa, papel, email, tarefaOutra, motivo, link, consentimentoEmails, siteAntigo };
 }
+
+/** Versão 2. Devolve null se alguma coisa não servir: um pedido recusado não grava nada. */
+function validarV2(b) {
+  if (!b || typeof b !== 'object' || Array.isArray(b)) return null;
+  if (b.consentimento !== true || typeof b.consentimento_emails !== 'boolean') return null;
+
+  const nome = texto(b.nome, 120);
+  const empresa = texto(b.empresa, 120);
+  const email = typeof b.email === 'string' && b.email.trim().length <= 254 && EMAIL_RE.test(b.email.trim()) ? b.email.trim() : null;
+  if (!nome || !empresa || !email) return null;
+
+  const obrigatorias = ['setor', 'papel', 'contactos_semana', 'tempo_resposta', 'fora_horas', 'seguimento', 'preocupacao', 'urgencia'];
+  if (!obrigatorias.every((k) => V2[k].includes(b[k]))) return null;
+  const setorOutro = b.setor === 'outro' ? texto(b.setor_outro, 80) : null;
+  if (b.setor === 'outro' && !setorOutro) return null;
+
+  if (!Array.isArray(b.canais) || b.canais.length === 0 || new Set(b.canais).size !== b.canais.length) return null;
+  if (!b.canais.every((c) => V2.canais.includes(c))) return null;
+
+  if (typeof b.marcacoes !== 'boolean') return null;
+  if (b.marcacoes ? !V2.faltas_semana.includes(b.faltas_semana) : b.faltas_semana != null) return null;
+
+  // Os números são opcionais: null (ou ausente) = sem número.
+  const opcional = (v, tabela) => (v == null ? null : typeof v === 'string' && Object.hasOwn(tabela, v) ? v : undefined);
+  const horas = opcional(b.horas_semana, V2_HORAS);
+  const custo = opcional(b.custo_hora, V2_CUSTO);
+  const valor = opcional(b.valor_cliente, V2_VALOR);
+  if (horas === undefined || custo === undefined || valor === undefined) return null;
+
+  const motivo = motivoValido(b.motivo);
+  if (!motivo) return null;
+
+  const link = Object.fromEntries(PARAMETROS_LINK.map((p) => [p, parametroLink(b[p])]));
+
+  return {
+    versao: 2,
+    nome,
+    empresa,
+    email,
+    motivo,
+    link,
+    consentimentoEmails: b.consentimento_emails,
+    siteAntigo: false,
+    setor: b.setor,
+    setorOutro,
+    papel: b.papel,
+    canais: b.canais,
+    contactos_semana: b.contactos_semana,
+    tempo_resposta: b.tempo_resposta,
+    fora_horas: b.fora_horas,
+    seguimento: b.seguimento,
+    marcacoes: b.marcacoes,
+    faltas_semana: b.marcacoes ? b.faltas_semana : null,
+    horas_semana: horas,
+    custo_hora: custo,
+    valor_cliente: valor,
+    preocupacao: b.preocupacao,
+    urgencia: b.urgencia,
+  };
+}
+
+/** Versão 2: a conta (só com os números da pessoa), os pontos de perda e até 2 serviços. */
+function calcularV2(v) {
+  const h = v.horas_semana ? V2_HORAS[v.horas_semana] : null;
+  const c = v.custo_hora ? V2_CUSTO[v.custo_hora] : null;
+  const valor = v.valor_cliente ? V2_VALOR[v.valor_cliente] : null;
+  const tempo = h !== null && c !== null;
+
+  const respostaLenta = v.tempo_resposta === 'mesmo_dia' || v.tempo_resposta === 'dia_seguinte';
+  const foraDeHoras = v.fora_horas === 'ninguem' || v.fora_horas === 'eu_noite';
+  const semSeguimento = v.seguimento === 'quase_nunca' || v.seguimento === 'as_vezes';
+  const faltas = v.marcacoes && (v.faltas_semana === '3_5' || v.faltas_semana === 'mais_5');
+
+  const pontos = [];
+  if (respostaLenta) pontos.push('resposta_lenta');
+  if (v.tempo_resposta === 'nao_sei') pontos.push('resposta_nao_sei');
+  if (v.fora_horas === 'ninguem') pontos.push('fora_horas_ninguem');
+  if (v.fora_horas === 'eu_noite') pontos.push('fora_horas_eu');
+  if (v.seguimento === 'quase_nunca') pontos.push('seguimento_quase_nunca');
+  if (v.seguimento === 'as_vezes') pontos.push('seguimento_as_vezes');
+  if (faltas) pontos.push('faltas');
+
+  const servicos = [];
+  if (semSeguimento) servicos.push('qualificacao');
+  else if (respostaLenta || foraDeHoras)
+    servicos.push(v.canais.some((canal) => ['formulario', 'email', 'portais'].includes(canal)) ? 'resposta_imediata' : 'atendimento');
+  if (faltas) servicos.push('lembretes');
+
+  return {
+    total_horas_ano: tempo ? h * 48 : null,
+    total_custo_mes: tempo ? dezenas(h * c * 4) : null,
+    total_custo_ano: tempo ? dezenas(h * c * 48) : null,
+    referencia_cliente_ano: valor !== null ? valor * 48 : null,
+    pontos_perda: pontos,
+    servicos_sugeridos: servicos.slice(0, 2),
+  };
+}
+
+const nomeSetor = (v) => (v.setor === 'outro' ? `Outro: ${v.setorOutro}` : V2_SETORES[v.setor]);
 
 const nomeTarefa = (v, id) => (id === 'outra' ? v.tarefaOutra : NOMES[id]);
 
@@ -298,6 +454,11 @@ const CAMPO = {
   fbclid: 'fbclid',
   telefone: 'phone_number',
   mapaId: 'mapa_id',
+  // Versão 2 (2026-10-24): campos novos, criados na conta pelo Celso antes da publicação.
+  setor: 'setor',
+  urgencia: 'urgencia',
+  contactosSemana: 'contactos_semana',
+  servicoSugerido: 'servico_sugerido',
 };
 
 // Nome exacto da tag → variável de ambiente com o id dela.
@@ -381,6 +542,7 @@ async function idsDasTags(ctx, nomes) {
 
 /** Os campos do contacto. Os parâmetros do link vazios não se enviam: não apagam os de um mapa anterior. */
 function camposDoMapa(v, totais, id) {
+  if (v.versao === 2) return camposDoMapaV2(v, totais, id);
   const campos = [
     [CAMPO.nome, v.nome],
     [CAMPO.empresa, v.empresa],
@@ -389,6 +551,32 @@ function camposDoMapa(v, totais, id) {
     [CAMPO.maiorPerda, nomeTarefa(v, totais.maior_perda)],
     [CAMPO.nivelIa, v.nivel_ia],
     [CAMPO.preocupacao, v.preocupacao],
+    [CAMPO.utmSource, v.link.utm_source],
+    [CAMPO.utmCampaign, v.link.utm_campaign],
+    [CAMPO.utmContent, v.link.utm_content],
+    [CAMPO.fbclid, v.link.fbclid ? 'sim' : 'não'],
+    [CAMPO.mapaId, id],
+  ];
+  return campos.filter(([, value]) => value !== null).map(([slug, value]) => ({ slug, value }));
+}
+
+/**
+ * Versão 2. Os valores de decisão (setor, papel, preocupacao, urgencia) vão como ids, para os
+ * workflows; maior_perda e servico_sugerido vão com o nome, para ler e para os emails.
+ * nivel_ia deixa de ir. Sem os números, total_custo_ano não se envia (não apaga o de um mapa anterior).
+ */
+function camposDoMapaV2(v, totais, id) {
+  const campos = [
+    [CAMPO.nome, v.nome],
+    [CAMPO.empresa, v.empresa],
+    [CAMPO.papel, v.papel],
+    [CAMPO.setor, v.setor],
+    [CAMPO.urgencia, v.urgencia],
+    [CAMPO.contactosSemana, v.contactos_semana],
+    [CAMPO.preocupacao, v.preocupacao],
+    [CAMPO.totalCustoAno, totais.total_custo_ano === null ? null : String(totais.total_custo_ano)],
+    [CAMPO.maiorPerda, totais.pontos_perda.length ? V2_PONTOS[totais.pontos_perda[0]] : 'Nenhuma clara'],
+    [CAMPO.servicoSugerido, totais.servicos_sugeridos.length ? V2_SERVICOS[totais.servicos_sugeridos[0]] : 'A ver na conversa'],
     [CAMPO.utmSource, v.link.utm_source],
     [CAMPO.utmCampaign, v.link.utm_campaign],
     [CAMPO.utmContent, v.link.utm_content],
@@ -491,6 +679,74 @@ async function telefoneDepois(chaveSysteme, v) {
   }
 }
 
+// ── A linha de mapas e o resumo da lead, por versão ──────────
+
+function mapaV2(v) {
+  const totais = calcularV2(v);
+  const servico = totais.servicos_sugeridos.length ? V2_SERVICOS[totais.servicos_sugeridos[0]] : 'a ver na conversa';
+  const conta = totais.total_custo_ano === null ? '' : ` · ${euros(totais.total_custo_ano)} €/ano`;
+  const resumo = `Mapa · ${v.empresa} · ${nomeSetor(v)} · começar por: ${servico}${conta}\nFrase do Mapa: «${v.motivo}»`;
+  const linha = {
+    versao_mapa: 2,
+    nome: v.nome,
+    empresa: v.empresa,
+    papel: v.papel,
+    email: v.email,
+    consentimento: true,
+    consentimento_texto: TEXTO_CONSENTIMENTO,
+    consentimento_emails: v.consentimentoEmails,
+    consentimento_emails_texto: v.consentimentoEmails ? TEXTO_CONSENTIMENTO_EMAILS : null,
+    setor: v.setor,
+    setor_outro: v.setorOutro,
+    canais: v.canais,
+    contactos_semana: v.contactos_semana,
+    tempo_resposta: v.tempo_resposta,
+    fora_horas: v.fora_horas,
+    seguimento: v.seguimento,
+    marcacoes: v.marcacoes,
+    faltas_semana: v.faltas_semana,
+    horas_semana: v.horas_semana,
+    custo_hora: v.custo_hora,
+    valor_cliente: v.valor_cliente,
+    preocupacao: v.preocupacao,
+    urgencia: v.urgencia,
+    motivo: v.motivo,
+  };
+  return { totais, resumo, linha };
+}
+
+function mapaV1(v) {
+  const totais = calcular(v.tarefas, v.horas, v.custo_hora);
+  const resumo =
+    `Mapa de automação · ${v.empresa} · ${euros(totais.total_custo_ano)} €/ano · ` +
+    `maior perda: ${nomeTarefa(v, totais.maior_perda)}\n` +
+    `Frase do Mapa: «${v.motivo}»`;
+  const linha = {
+    versao_mapa: 1,
+    nome: v.nome,
+    empresa: v.empresa,
+    papel: v.papel,
+    email: v.email,
+    consentimento: true,
+    consentimento_texto: v.siteAntigo ? TEXTO_CONSENTIMENTO_ANTERIOR : TEXTO_CONSENTIMENTO,
+    consentimento_emails: v.consentimentoEmails,
+    consentimento_emails_texto: v.consentimentoEmails ? TEXTO_CONSENTIMENTO_EMAILS_V1 : null,
+    pessoas: v.pessoas,
+    tarefa_1: v.tarefas[0],
+    horas_1: v.horas[v.tarefas[0]],
+    tarefa_2: v.tarefas[1],
+    horas_2: v.horas[v.tarefas[1]],
+    tarefa_3: v.tarefas[2],
+    horas_3: v.horas[v.tarefas[2]],
+    tarefa_outra: v.tarefaOutra,
+    custo_hora: v.custo_hora,
+    nivel_ia: v.nivel_ia,
+    preocupacao: v.preocupacao,
+    motivo: v.motivo,
+  };
+  return { totais, resumo, linha };
+}
+
 // ── Handler ──────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -509,7 +765,8 @@ export default async function handler(req, res) {
   }
   if (body && Buffer.byteLength(JSON.stringify(body)) > MAX_BYTES) return falhar(res, 413);
 
-  const v = req.method === 'PATCH' ? validarTelefone(body) : validar(body);
+  // versao_mapa: 2 → Mapa novo; sem o campo → site antigo (versão 1), só durante a publicação.
+  const v = req.method === 'PATCH' ? validarTelefone(body) : body?.versao_mapa === 2 ? validarV2(body) : validar(body);
   if (!v) return falhar(res, 400);
 
   const url = process.env.LEADS_SUPABASE_URL;
@@ -537,43 +794,14 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true });
   }
 
-  const totais = calcular(v.tarefas, v.horas, v.custo_hora);
-  const resumo =
-    `Mapa de automação · ${v.empresa} · ${euros(totais.total_custo_ano)} €/ano · ` +
-    `maior perda: ${nomeTarefa(v, totais.maior_perda)}\n` +
-    `Frase do Mapa: «${v.motivo}»`;
-
   // O id vem do site, igual nas duas tentativas do mesmo envio: assim a 2.ª não duplica o mapa.
   const id = typeof body.id === 'string' && UUID_RE.test(body.id) ? body.id.toLowerCase() : crypto.randomUUID();
 
+  const { totais, resumo, linha } = v.versao === 2 ? mapaV2(v) : mapaV1(v);
+
   try {
     const leadId = await garantirLead(url, chave, v, resumo.slice(0, 1000));
-    await inserirMapa(url, chave, {
-      id,
-      lead_id: leadId,
-      nome: v.nome,
-      empresa: v.empresa,
-      papel: v.papel,
-      email: v.email,
-      consentimento: true,
-      consentimento_texto: v.siteAntigo ? TEXTO_CONSENTIMENTO_ANTERIOR : TEXTO_CONSENTIMENTO,
-      consentimento_emails: v.consentimentoEmails,
-      consentimento_emails_texto: v.consentimentoEmails ? TEXTO_CONSENTIMENTO_EMAILS : null,
-      pessoas: v.pessoas,
-      tarefa_1: v.tarefas[0],
-      horas_1: v.horas[v.tarefas[0]],
-      tarefa_2: v.tarefas[1],
-      horas_2: v.horas[v.tarefas[1]],
-      tarefa_3: v.tarefas[2],
-      horas_3: v.horas[v.tarefas[2]],
-      tarefa_outra: v.tarefaOutra,
-      custo_hora: v.custo_hora,
-      nivel_ia: v.nivel_ia,
-      preocupacao: v.preocupacao,
-      motivo: v.motivo,
-      ...v.link,
-      ...totais,
-    });
+    await inserirMapa(url, chave, { id, lead_id: leadId, ...linha, ...v.link, ...totais });
   } catch (err) {
     console.error('[mapa] erro:', err.message);
     return falhar(res, 502);
